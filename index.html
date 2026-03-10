@@ -401,8 +401,8 @@ select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='ht
   <div class="fg"><label class="fl" id="sf-odo-lbl">Odometer saat servis (km)</label><input id="sf-odo" type="number" inputmode="numeric" placeholder="12450"></div>
   <div class="fg"><label class="fl">Biaya (Rp)</label><div class="pfx"><span>Rp</span><input id="sf-cost" type="number" placeholder="55000" inputmode="numeric"></div></div>
   <div class="fg"><label class="fl">Reminder Servis Berikutnya</label>
-    <div class="fr"><div><label class="fl">Tanggal</label><input id="sf-nd" type="date"></div><div><label class="fl" id="sf-nk-lbl">+ km</label><input id="sf-nk" type="number" placeholder="2000" inputmode="numeric"></div></div>
-    <div class="fhint">Kosongkan jika tidak perlu reminder</div>
+    <div class="fr"><div><label class="fl">Tanggal</label><input id="sf-nd" type="date"></div><div><label class="fl" id="sf-nk-lbl">+ km interval</label><input id="sf-nk" type="number" placeholder="cth: 2000" inputmode="numeric"></div></div>
+    <div class="fhint" id="sf-nk-hint">Isi interval km (cth: 2000) → otomatis dihitung dari odometer servis</div>
   </div>
   <div class="fg"><label class="fl">Catatan <span style="color:var(--muted);font-weight:400;text-transform:none">(opsional)</span></label><input id="sf-note" type="text" placeholder="cth: Ganti ban IRC, Bengkel Pak Budi"></div>
   <div id="sf-del" style="display:none"><div class="dvd mt12"></div><button class="btn btn-d mt12" onclick="delSvc()">Hapus Servis</button></div>
@@ -1001,7 +1001,11 @@ async function saveSvc(){
   if(!type){toast('Pilih kategori servis dulu','e');return}
   const id=document.getElementById('sf-id').value;const m=gm();
   const odoR=parseFloat(document.getElementById('sf-odo').value)||null;
-  const data={user_id:S.user.id,motor_id:S.mid,date,type,odometer:odoR,cost:parseFloat(document.getElementById('sf-cost').value)||null,next_date:document.getElementById('sf-nd').value||null,next_km:parseFloat(document.getElementById('sf-nk').value)||null,note:document.getElementById('sf-note').value.trim()||null};
+  const nkRaw=parseFloat(document.getElementById('sf-nk').value)||null;
+  // if mode odometer & odo filled & nk looks like an interval (< odo), add to odo
+  let nextKm=nkRaw;
+  if(nkRaw&&odoR&&m?.odo_mode==='odometer'&&nkRaw<odoR)nextKm=odoR+nkRaw;
+  const data={user_id:S.user.id,motor_id:S.mid,date,type,odometer:odoR,cost:parseFloat(document.getElementById('sf-cost').value)||null,next_date:document.getElementById('sf-nd').value||null,next_km:nextKm,note:document.getElementById('sf-note').value.trim()||null};
   try{
     if(id){await dbU(`rl_service?id=eq.${id}`,data);const i=S.svcs.findIndex(s=>s.id===id);S.svcs[i]={...S.svcs[i],...data}}
     else{const[s]=await dbP('rl_service',{...data,id:nuid()});S.svcs.unshift(s)}
