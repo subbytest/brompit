@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#0a0a0a">
-<title>Ridelog</title>
+<title>RideLog</title>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#f2f2f7;--bg2:#e5e5ea;--card:#fff;--card2:#f2f2f7;--text:#1c1c1e;--text2:#3c3c43;--muted:#8e8e93;--border:rgba(0,0,0,.1);--accent:#007aff;--al:rgba(0,122,255,.12);--green:#34c759;--gl:rgba(52,199,89,.12);--orange:#ff9500;--ol:rgba(255,149,0,.12);--red:#ff3b30;--rl:rgba(255,59,48,.12);--sh:0 1px 8px rgba(0,0,0,.08);--nav:60px;--hd:56px}
@@ -166,7 +166,7 @@ select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='ht
   <div style="display:flex;flex-direction:column;align-items:center;margin-bottom:36px">
     <div style="font-size:52px;margin-bottom:12px">🏍️</div>
     <div class="a-logo">Ride<span>Log</span></div>
-    <div class="a-sub">Ride Smarter, Maintain Better</div>
+    <div class="a-sub">Catat perjalanan & perawatan motormu</div>
   </div>
   <div class="a-form">
     <div class="fg"><label class="fl">Username Kamu</label><input id="au" type="text" placeholder="Contoh: budi, motor01" autocapitalize="none" autocomplete="username"></div>
@@ -269,9 +269,9 @@ select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='ht
 <!-- Motor Form -->
 <div class="ovl" id="sh-mf"><div class="sheet" data-sheet-id='sh-mf'><div class="sh-handle"></div><div class="sh-hd"><div class="sh-title" id="sh-mf-t">Tambah Motor</div><button class="sh-close" onclick="csh('sh-mf')">✕</button></div><div class="sh-body">
   <input type="hidden" id="mf-id">
-  <div class="fg"><label class="fl">Nama / Panggilan</label><input id="mf-name" type="text" placeholder="Beat"></div>
-  <div class="fr"><div class="fg"><label class="fl">Merek</label><input id="mf-brand" type="text" placeholder="Yamaha"></div><div class="fg"><label class="fl">Tahun</label><input id="mf-year" type="number" placeholder="2020" inputmode="numeric"></div></div>
-  <div class="fg"><label class="fl">Plat Nomor</label><input id="mf-plate" type="text" placeholder="AD 666 XX" autocapitalize="characters"></div>
+  <div class="fg"><label class="fl">Nama / Panggilan</label><input id="mf-name" type="text" placeholder="cth: Beat Harian"></div>
+  <div class="fr"><div class="fg"><label class="fl">Merek</label><input id="mf-brand" type="text" placeholder="Honda"></div><div class="fg"><label class="fl">Tahun</label><input id="mf-year" type="number" placeholder="2021" inputmode="numeric"></div></div>
+  <div class="fg"><label class="fl">Plat Nomor</label><input id="mf-plate" type="text" placeholder="B 1234 XYZ" autocapitalize="characters"></div>
   <div class="fg"><label class="fl">Mode Odometer</label><select id="mf-odo" onchange="modoChange()"><option value="odometer">Odometer — angka speedometer</option><option value="manual">Manual — input jarak tempuh langsung</option></select><div class="fhint" id="mf-odo-hint">Input angka odometer saat isi bensin/servis</div></div>
   <div class="fg" id="mf-oi-wrap"><label class="fl">Odometer Awal (km)</label><input id="mf-oi" type="number" placeholder="0" inputmode="numeric"><div class="fhint">Angka odometer saat ini</div></div>
   <div id="mf-del" style="display:none"><div class="dvd mt12"></div><button class="btn btn-d mt12" onclick="delMotor()">Hapus Motor</button></div>
@@ -282,7 +282,7 @@ select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='ht
 <div class="ovl" id="sh-bf"><div class="sheet" data-sheet-id='sh-bf'><div class="sh-handle"></div><div class="sh-hd"><div class="sh-title" id="sh-bf-t">Tambah BBM</div><button class="sh-close" onclick="csh('sh-bf')">✕</button></div><div class="sh-body">
   <input type="hidden" id="bf-id">
   <div class="fg"><label class="fl">Nama BBM</label><input id="bf-name" type="text" placeholder="cth: Pertalite"></div>
-  <div class="fg"><label class="fl">Harga per Liter (Rp)</label><div class="pfx"><span>Rp</span><input id="bf-price" type="number" placeholder="10.000" inputmode="numeric"></div></div>
+  <div class="fg"><label class="fl">Harga per Liter (Rp)</label><div class="pfx"><span>Rp</span><input id="bf-price" type="number" placeholder="10000" inputmode="numeric"></div></div>
   <div id="bf-del" style="display:none"><div class="dvd mt12"></div><button class="btn btn-d mt12" onclick="delBbm()">Hapus BBM</button></div>
   <button class="btn btn-p mt16" onclick="saveBbm()">Simpan</button>
 </div></div></div>
@@ -291,7 +291,7 @@ select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='ht
 <div class="ovl" id="sh-fa"><div class="sheet" data-sheet-id='sh-fa'><div class="sh-handle"></div><div class="sh-hd"><div class="sh-title">⛽ Isi Bensin</div><button class="sh-close" onclick="csh('sh-fa')">✕</button></div><div class="sh-body">
   <div class="fg"><label class="fl">Tanggal & Jam</label><input id="fa-date" type="datetime-local"></div>
   <div class="fg"><label class="fl">Jenis BBM</label><select id="fa-bbm" onchange="fuelCalc()"></select></div>
-  <div class="fg"><label class="fl">Total Bayar (Rp)</label><div class="pfx"><span>Rp</span><input id="fa-amt" type="number" placeholder="20.000" inputmode="numeric" oninput="fuelCalc()"></div></div>
+  <div class="fg"><label class="fl">Total Bayar (Rp)</label><div class="pfx"><span>Rp</span><input id="fa-amt" type="number" placeholder="20000" inputmode="numeric" oninput="fuelCalc()"></div></div>
   <div class="fg"><label class="fl">Jumlah Liter <span style="color:var(--muted);font-weight:400;text-transform:none">(opsional — otomatis dari bayar ÷ harga)</span></label><input id="fa-ltr" type="number" placeholder="2.0" inputmode="decimal" step="0.01" oninput="fuelCalc()"><div class="fhint" id="fa-lhint"></div></div>
   <div class="fg" id="fa-odo-wrap">
     <label class="fl" id="fa-odo-lbl">Jarak Tempuh (km)</label>
@@ -302,7 +302,7 @@ select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='ht
       <div style="font-size:11px;color:var(--text2);line-height:1.6">Isi estimasi km yang sudah kamu tempuh sejak isian bensin terakhir.<br>Contoh: sudah jalan ~45km → isi 45</div>
     </div>
   </div>
-  <div class="fg"><label class="fl">Catatan <span style="color:var(--muted);font-weight:400;text-transform:none">(opsional)</span></label><input id="fa-note" type="text" placeholder="Pertamina Solo Baru"></div>
+  <div class="fg"><label class="fl">Catatan <span style="color:var(--muted);font-weight:400;text-transform:none">(opsional)</span></label><input id="fa-note" type="text" placeholder="cth: SPBU Shell Sudirman"></div>
   <div class="card" id="fa-prev" style="display:none;margin-bottom:14px">
     <div class="sec-title" style="padding:0 0 8px">📊 Preview Kalkulasi</div>
     <div id="fa-prev-body"></div>
@@ -324,7 +324,7 @@ select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='ht
     <div class="fr"><div><label class="fl">Tanggal</label><input id="sf-nd" type="date"></div><div><label class="fl" id="sf-nk-lbl">+ km</label><input id="sf-nk" type="number" placeholder="2000" inputmode="numeric"></div></div>
     <div class="fhint">Kosongkan jika tidak perlu reminder</div>
   </div>
-  <div class="fg"><label class="fl">Catatan</label><input id="sf-note" type="text" placeholder="Bengkel Io.Garage"></div>
+  <div class="fg"><label class="fl">Catatan</label><input id="sf-note" type="text" placeholder="cth: Bengkel Pak Budi"></div>
   <div id="sf-del" style="display:none"><div class="dvd mt12"></div><button class="btn btn-d mt12" onclick="delSvc()">Hapus Servis</button></div>
   <button class="btn btn-p mt16" onclick="saveSvc()">Simpan</button>
 </div></div></div>
@@ -498,7 +498,7 @@ function rHome(){
     ['h-fuel','h-svc','h-parts'].forEach(id=>document.getElementById(id).innerHTML='');return;
   }
   // calc
-  const kmls=S.fuel.filter(f=>f.km_per_liter).map(f=>f.km_per_liter);
+  const kmls=S.fuel.filter(f=>f.km_per_liter&&f.km_per_liter>0&&f.km_per_liter<200).map(f=>f.km_per_liter);
   const avgKml=kmls.length?(kmls.reduce((a,b)=>a+b,0)/kmls.length).toFixed(1):null;
   const now=new Date();
   const moCost=S.fuel.filter(f=>{const d=new Date(f.date);return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear()}).reduce((a,f)=>a+(f.amount_paid||0),0);
@@ -619,7 +619,7 @@ function rFuel(){
   updChips();
   const st=document.getElementById('f-stats'),ch=document.getElementById('f-chart'),li=document.getElementById('f-list');
   if(!gm()||!S.fuel.length){st.innerHTML='';ch.innerHTML='';li.innerHTML=`<div class="empty"><div class="empty-ico">⛽</div><div class="empty-title">Belum ada isian bensin</div><div class="empty-sub">Tap + untuk mencatat isian bensin pertama</div></div>`;return}
-  const kmls=S.fuel.filter(f=>f.km_per_liter).map(f=>f.km_per_liter);
+  const kmls=S.fuel.filter(f=>f.km_per_liter&&f.km_per_liter>0&&f.km_per_liter<200).map(f=>f.km_per_liter);
   const avgKml=kmls.length?kmls.reduce((a,b)=>a+b,0)/kmls.length:null;
   const bestKml=kmls.length?Math.max(...kmls):null;
   const now=new Date();
@@ -632,7 +632,7 @@ function rFuel(){
     <div class="sb"><div class="sv">${totL.toFixed(1)} L</div><div class="sl">Total liter</div></div>
   </div>`;
   // chart
-  const cd=S.fuel.filter(f=>f.km_per_liter).slice(0,8).reverse();
+  const cd=S.fuel.filter(f=>f.km_per_liter&&f.km_per_liter>0&&f.km_per_liter<200).slice(0,8).reverse();
   if(cd.length>1){
     const mx=Math.max(...cd.map(f=>f.km_per_liter));
     ch.innerHTML=`<div class="card" style="margin-bottom:12px">
@@ -647,7 +647,7 @@ function fuelLI(f){
   return`<div class="li" style="cursor:pointer" onclick="openFuelDetail('${f.id}')">
     <div class="li-ico b">⛽</div>
     <div class="li-body"><div class="li-title">${rp(f.amount_paid)} · ${f.liters?f.liters.toFixed(1)+'L':'—'}</div><div class="li-sub">${fmtD(f.date)} · ${b?.name||'—'}</div></div>
-    <div class="li-right">${f.km_per_liter?`<div class="badge b">${f.km_per_liter.toFixed(1)} km/L</div>`:'<div class="badge x">—</div>'}${f.km_traveled?`<div class="li-vsub">${km(f.km_traveled)}</div>`:''}</div>
+    <div class="li-right">${f.km_per_liter?`<div class="badge b">${f.km_per_liter.toFixed(1)} km/L</div>`:'<div class="badge x">—</div>'}${f.km_traveled?`<div class="li-vsub">${km(f.km_traveled)}</div>`:f.odometer?`<div class="li-vsub">${km(f.odometer)}</div>`:''}</div>
   </div>`;
 }
 function openFuelDetail(id){
@@ -736,8 +736,10 @@ async function saveFuel(){
   const m=gm();
   const prev=S.fuel.find(f=>m?.odo_mode==='odometer'?f.odometer!=null:f.km_traveled!=null);
   let kmt=null;
-  if(m?.odo_mode==='odometer'&&odoV&&prev?.odometer)kmt=odoV-prev.odometer;
-  else if(m?.odo_mode==='manual'&&odoV)kmt=odoV;
+  if(m?.odo_mode==='odometer'&&odoV&&prev?.odometer){
+    if(odoV<=prev.odometer){toast('Odometer harus lebih besar dari sebelumnya ('+km(prev.odometer)+')','e');return}
+    kmt=odoV-prev.odometer;
+  }else if(m?.odo_mode==='manual'&&odoV)kmt=odoV;
   const kml=kmt&&liters?parseFloat((kmt/liters).toFixed(2)):null;
   const cpk=kmt&&amt?parseFloat((amt/kmt).toFixed(2)):null;
   const data={id:nuid(),user_id:S.user.id,motor_id:S.mid,date:new Date(document.getElementById('fa-date').value).toISOString(),bbm_id:sel.value,bbm_name:opt.text,amount_paid:amt,liters,odometer:m?.odo_mode==='odometer'?odoV:null,km_traveled:kmt,km_per_liter:kml,note:document.getElementById('fa-note').value.trim()||null};
@@ -880,7 +882,7 @@ function rSum(){
   const fuel=S.fuel.filter(f=>inP(f.date));const svcs=S.svcs.filter(s=>inP(s.date));
   const fc=fuel.reduce((a,f)=>a+(f.amount_paid||0),0);const sc=svcs.reduce((a,s)=>a+(s.cost||0),0);
   const fl=fuel.reduce((a,f)=>a+(f.liters||0),0);
-  const kmls=fuel.filter(f=>f.km_per_liter).map(f=>f.km_per_liter);
+  const kmls=fuel.filter(f=>f.km_per_liter&&f.km_per_liter>0&&f.km_per_liter<200).map(f=>f.km_per_liter);
   const avgKml=kmls.length?kmls.reduce((a,b)=>a+b,0)/kmls.length:null;
   const totKm=fuel.filter(f=>f.km_traveled).reduce((a,f)=>a+(f.km_traveled||0),0);
   el.innerHTML=`<div class="sg">
