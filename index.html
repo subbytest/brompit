@@ -166,7 +166,7 @@ select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='ht
   <div style="display:flex;flex-direction:column;align-items:center;margin-bottom:36px">
     <div style="font-size:52px;margin-bottom:12px">🏍️</div>
     <div class="a-logo">Ride<span>Log</span></div>
-    <div class="a-sub">Ride Smarter, Maintain Better.</div>
+    <div class="a-sub">Ride Smarter, Maintain Better</div>
   </div>
   <div class="a-form">
     <div class="fg"><label class="fl">Username Kamu</label><input id="au" type="text" placeholder="Contoh: budi, motor01" autocapitalize="none" autocomplete="username"></div>
@@ -589,7 +589,7 @@ async function saveBbm(){
   if(!price||price<=0){toast('Harga harus diisi','e');return}
   const id=document.getElementById('bf-id').value;
   try{
-    if(id){await dbU(`rl_bbm?id=eq.${id}`,{name,price,updated_at:new Date().toISOString()});const i=S.bbms.findIndex(b=>b.id===id);S.bbms[i]={...S.bbms[i],name,price}}
+    if(id){await dbU(`rl_bbm?id=eq.${id}`,{name,price});const i=S.bbms.findIndex(b=>b.id===id);S.bbms[i]={...S.bbms[i],name,price}}
     else{const[b]=await dbP('rl_bbm',{id:nuid(),user_id:S.user.id,name,price});S.bbms.push(b)}
     csh('sh-bf');toast(id?'BBM diperbarui':'BBM ditambahkan','ok');rSet();
   }catch(err){toast('Gagal: '+err.message,'e')}
