@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#0a0a0a">
-<title>RideLog</title>
+<title>Ridelog</title>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#f2f2f7;--bg2:#e5e5ea;--card:#fff;--card2:#f2f2f7;--text:#1c1c1e;--text2:#3c3c43;--muted:#8e8e93;--border:rgba(0,0,0,.1);--accent:#007aff;--al:rgba(0,122,255,.12);--green:#34c759;--gl:rgba(52,199,89,.12);--orange:#ff9500;--ol:rgba(255,149,0,.12);--red:#ff3b30;--rl:rgba(255,59,48,.12);--sh:0 1px 8px rgba(0,0,0,.08);--nav:60px;--hd:56px}
@@ -83,7 +83,7 @@ select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='ht
 .btn-d{background:var(--rl);color:var(--red)}
 .btn-s{background:var(--card2);color:var(--text)}
 /* fab */
-.fab{position:fixed;bottom:calc(var(--nav) + 16px + env(safe-area-inset-bottom));right:16px;width:52px;height:52px;border-radius:50%;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(0,122,255,.4);font-size:24px;z-index:30;transition:.2s;font-family:'Manrope',sans-serif}
+.fab{position:fixed;bottom:calc(var(--nav) + 16px + env(safe-area-inset-bottom));right:max(16px, calc(50% - 430px/2 + 16px));width:52px;height:52px;border-radius:50%;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(0,122,255,.4);font-size:24px;z-index:30;transition:.2s;font-family:'Manrope',sans-serif}
 .fab:active{transform:scale(.93)}
 /* motor chip */
 .mchip{display:flex;align-items:center;gap:6px;background:var(--card2);border-radius:20px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer;max-width:180px}
@@ -416,7 +416,7 @@ async function authSubmit(){
       await doLogin(users[0]);
     }else{
       const [usr]=await dbP('rl_users',{id:nuid(),username:u});
-      await Promise.all([dbP('rl_bbm',{id:nuid(),user_id:usr.id,name:'Pertalite',price:10000}),dbP('rl_bbm',{id:nuid(),user_id:usr.id,name:'Pertamax',price:13900})]);
+      await Promise.all([dbP('rl_bbm',{id:nuid(),user_id:usr.id,name:'Pertalite',price:10000}),dbP('rl_bbm',{id:nuid(),user_id:usr.id,name:'Pertamax',price:12300})]);
       await doLogin(usr);
     }
   }catch(err){e.textContent='Gagal: '+err.message;btn.textContent='🏍️ Masuk ke RideLog';btn.disabled=false}
@@ -491,8 +491,8 @@ function rHome(){
   const avgKml=kmls.length?(kmls.reduce((a,b)=>a+b,0)/kmls.length).toFixed(1):null;
   const now=new Date();
   const moCost=S.fuel.filter(f=>{const d=new Date(f.date);return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear()}).reduce((a,f)=>a+(f.amount_paid||0),0);
-  const nxtSvc=S.svcs.filter(s=>s.next_due_date).sort((a,b)=>new Date(a.next_due_date)-new Date(b.next_due_date))[0];
-  const nxtDays=nxtSvc?Math.ceil((new Date(nxtSvc.next_due_date)-now)/(864e5)):null;
+  const nxtSvc=S.svcs.filter(s=>s.next_date).sort((a,b)=>new Date(a.next_date)-new Date(b.next_date))[0];
+  const nxtDays=nxtSvc?Math.ceil((new Date(nxtSvc.next_date)-now)/(864e5)):null;
   document.getElementById('h-hero').innerHTML=`<div class="mhero">
     <div class="mhero-name">${m.name}</div>
     <div class="mhero-sub">${[m.brand,m.year,m.plate].filter(Boolean).join(' · ')}</div>
@@ -644,14 +644,13 @@ function openFuelDetail(id){
   const b=S.bbms.find(x=>x.id===f.bbm_id);const m=gm();
   document.getElementById('sh-fd-body').innerHTML=`<div style="display:flex;flex-direction:column;gap:12px">
     <div class="card"><div class="sec-title" style="padding:0 0 10px">Info Isian</div>
-      ${drow('Tanggal',fmtDT(f.date))}${drow('BBM',b?.name||'—')}${drow('Total Bayar',rp(f.amount_paid))}${drow('Harga/Liter saat itu',rp(f.bbm_price_at_time))}${drow('Jumlah Liter',f.liters?f.liters.toFixed(2)+'L':'—')}${f.note?drow('Catatan',f.note):''}
+      ${drow('Tanggal',fmtDT(f.date))}${drow('BBM',f.bbm_name||b?.name||'—')}${drow('Total Bayar',rp(f.amount_paid))}${drow('Jumlah Liter',f.liters?f.liters.toFixed(2)+'L':'—')}${f.note?drow('Catatan',f.note):''}
     </div>
-    ${(f.km_per_liter||f.km_traveled||f.odo_value||f.km_manual)?`<div class="card"><div class="sec-title" style="padding:0 0 10px">Kalkulasi</div>
-      ${m?.odo_mode==='odometer'&&f.odo_value?drow('Odometer',km(f.odo_value)):''}
-      ${m?.odo_mode==='manual'&&f.km_manual?drow('Jarak tempuh manual',km(f.km_manual)):''}
+    ${(f.km_per_liter||f.km_traveled||f.odometer||f.km_traveled)?`<div class="card"><div class="sec-title" style="padding:0 0 10px">Kalkulasi</div>
+      ${m?.odo_mode==='odometer'&&f.odometer?drow('Odometer',km(f.odometer)):''}
+      ${m?.odo_mode==='manual'&&f.km_traveled?drow('Jarak tempuh manual',km(f.km_traveled)):''}
       ${f.km_traveled?drow('Jarak sejak isian terakhir',km(f.km_traveled)):''}
       ${f.km_per_liter?drow('Konsumsi',f.km_per_liter.toFixed(2)+' km/L'):''}
-      ${f.cost_per_km?drow('Biaya per km','Rp '+f.cost_per_km.toFixed(0)+'/km'):''}
     </div>`:''}
     <button class="btn btn-d" onclick="delFuel('${f.id}')">Hapus Isian</button>
   </div>`;
@@ -675,7 +674,7 @@ function openFuelAdd(){
   const sel=document.getElementById('fa-bbm');
   sel.innerHTML=S.bbms.map(b=>`<option value="${b.id}" data-price="${b.price}">${b.name} — ${rp(b.price)}/L</option>`).join('');
   const m=gm();
-  const lastOdo=S.fuel.find(f=>f.odo_value)?.odo_value;
+  const lastOdo=S.fuel.find(f=>f.odometer)?.odometer;
   if(m.odo_mode==='odometer'){
     document.getElementById('fa-odo-lbl').textContent='Odometer saat ini (km)';
     document.getElementById('fa-odo-hint').textContent=lastOdo?`Odometer terakhir: ${km(lastOdo)}`:'Lihat angka di speedometer';
@@ -696,9 +695,9 @@ function fuelCalc(){
   const liters=ltrIn||(amt&&bbmP?amt/bbmP:null);
   const odoV=parseFloat(document.getElementById('fa-odo').value)||null;
   const m=gm();
-  const prev=S.fuel.find(f=>m?.odo_mode==='odometer'?f.odo_value!=null:f.km_manual!=null);
+  const prev=S.fuel.find(f=>m?.odo_mode==='odometer'?f.odometer!=null:f.km_traveled!=null);
   let kmt=null;
-  if(m?.odo_mode==='odometer'&&odoV&&prev?.odo_value)kmt=odoV-prev.odo_value;
+  if(m?.odo_mode==='odometer'&&odoV&&prev?.odometer)kmt=odoV-prev.odometer;
   else if(m?.odo_mode==='manual'&&odoV)kmt=odoV;
   const kml=kmt&&liters?kmt/liters:null;
   const cpk=kmt&&amt?amt/kmt:null;
@@ -721,13 +720,13 @@ async function saveFuel(){
   const liters=parseFloat((ltrIn||amt/bbmP).toFixed(3));
   const odoV=parseFloat(document.getElementById('fa-odo').value)||null;
   const m=gm();
-  const prev=S.fuel.find(f=>m?.odo_mode==='odometer'?f.odo_value!=null:f.km_manual!=null);
+  const prev=S.fuel.find(f=>m?.odo_mode==='odometer'?f.odometer!=null:f.km_traveled!=null);
   let kmt=null;
-  if(m?.odo_mode==='odometer'&&odoV&&prev?.odo_value)kmt=odoV-prev.odo_value;
+  if(m?.odo_mode==='odometer'&&odoV&&prev?.odometer)kmt=odoV-prev.odometer;
   else if(m?.odo_mode==='manual'&&odoV)kmt=odoV;
   const kml=kmt&&liters?parseFloat((kmt/liters).toFixed(2)):null;
   const cpk=kmt&&amt?parseFloat((amt/kmt).toFixed(2)):null;
-  const data={id:nuid(),user_id:S.user.id,motor_id:S.mid,date:new Date(document.getElementById('fa-date').value).toISOString(),bbm_id:sel.value,bbm_price_at_time:bbmP,amount_paid:amt,liters,odo_value:m?.odo_mode==='odometer'?odoV:null,km_manual:m?.odo_mode==='manual'?odoV:null,km_traveled:kmt,km_per_liter:kml,cost_per_km:cpk,note:document.getElementById('fa-note').value.trim()||null};
+  const data={id:nuid(),user_id:S.user.id,motor_id:S.mid,date:new Date(document.getElementById('fa-date').value).toISOString(),bbm_id:sel.value,bbm_name:opt.text,amount_paid:amt,liters,odometer:m?.odo_mode==='odometer'?odoV:null,km_traveled:kmt,km_per_liter:kml,note:document.getElementById('fa-note').value.trim()||null};
   try{await dbP('rl_fuel',data);S.fuel.unshift(data);csh('sh-fa');toast('Isian bensin disimpan!','ok');rFuel();rHome()}
   catch(err){toast('Gagal: '+err.message,'e')}
 }
@@ -738,17 +737,17 @@ function rSvc(){
   const rem=document.getElementById('s-rem'),li=document.getElementById('s-list');
   if(!gm()){rem.innerHTML='';li.innerHTML='';return}
   const now=new Date();
-  const ups=S.svcs.filter(s=>s.next_due_date).sort((a,b)=>new Date(a.next_due_date)-new Date(b.next_due_date)).slice(0,3);
+  const ups=S.svcs.filter(s=>s.next_date).sort((a,b)=>new Date(a.next_date)-new Date(b.next_date)).slice(0,3);
   rem.innerHTML=ups.length?`<div class="sec-title" style="padding:0 0 10px">Reminder</div>`+ups.map(s=>{
-    const d=Math.ceil((new Date(s.next_due_date)-now)/864e5);
-    return`<div class="card" style="margin-bottom:8px;display:flex;align-items:center;justify-content:space-between"><div><div style="font-weight:700;font-size:14px">${svcLabel(s.type)}</div><div style="font-size:12px;color:var(--muted)">${fmtD(s.next_due_date)}</div></div><div class="badge ${d<0?'r':d<=7?'o':'g'}">${d<0?'Telat '+Math.abs(d)+'hr':d===0?'Hari ini':d+'hr lagi'}</div></div>`;
+    const d=Math.ceil((new Date(s.next_date)-now)/864e5);
+    return`<div class="card" style="margin-bottom:8px;display:flex;align-items:center;justify-content:space-between"><div><div style="font-weight:700;font-size:14px">${svcLabel(s.type)}</div><div style="font-size:12px;color:var(--muted)">${fmtD(s.next_date)}</div></div><div class="badge ${d<0?'r':d<=7?'o':'g'}">${d<0?'Telat '+Math.abs(d)+'hr':d===0?'Hari ini':d+'hr lagi'}</div></div>`;
   }).join(''):'';
   if(!S.svcs.length){li.innerHTML=`<div class="empty"><div class="empty-ico">🔧</div><div class="empty-title">Belum ada data servis</div><div class="empty-sub">Tap + untuk mencatat servis</div></div>`;return}
   li.innerHTML=S.svcs.map(s=>{
-    const d=s.next_due_date?Math.ceil((new Date(s.next_due_date)-now)/864e5):null;
+    const d=s.next_date?Math.ceil((new Date(s.next_date)-now)/864e5):null;
     return`<div class="li" style="cursor:pointer" onclick="openSvcEdit('${s.id}')">
       <div class="li-ico o">🔧</div>
-      <div class="li-body"><div class="li-title">${svcLabel(s.type)}</div><div class="li-sub">${fmtD(s.date)}${s.odo_value?' · '+km(s.odo_value):''}${s.note?' · '+s.note:''}</div></div>
+      <div class="li-body"><div class="li-title">${svcLabel(s.type)}</div><div class="li-sub">${fmtD(s.date)}${s.odometer?' · '+km(s.odometer):''}${s.note?' · '+s.note:''}</div></div>
       <div class="li-right"><div class="li-val">${rp(s.cost)}</div>${d!=null?`<div class="badge ${d<0?'r':d<=7?'o':'g'}" style="margin-top:4px">${d<0?'Telat':d+'hr'}</div>`:''}</div>
     </div>`;
   }).join('');
@@ -766,9 +765,9 @@ function openSvcAdd(){
 function openSvcEdit(id){
   const s=S.svcs.find(x=>x.id===id);if(!s)return;
   document.getElementById('sf-id').value=s.id;document.getElementById('sf-date').value=s.date?.split('T')[0]||'';
-  document.getElementById('sf-type').value=s.type;document.getElementById('sf-odo').value=s.odo_value||s.km_manual||'';
-  document.getElementById('sf-cost').value=s.cost||'';document.getElementById('sf-nd').value=s.next_due_date?.split('T')[0]||'';
-  document.getElementById('sf-nk').value=s.next_due_km||'';document.getElementById('sf-note').value=s.note||'';
+  document.getElementById('sf-type').value=s.type;document.getElementById('sf-odo').value=s.odometer||'';
+  document.getElementById('sf-cost').value=s.cost||'';document.getElementById('sf-nd').value=s.next_date?.split('T')[0]||'';
+  document.getElementById('sf-nk').value=s.next_km||'';document.getElementById('sf-note').value=s.note||'';
   document.getElementById('sh-sf-t').textContent='Edit Servis';document.getElementById('sf-del').style.display='';osh('sh-sf');
 }
 async function saveSvc(){
@@ -776,7 +775,7 @@ async function saveSvc(){
   if(!date){toast('Tanggal wajib diisi','e');return}
   const id=document.getElementById('sf-id').value;const m=gm();
   const odoR=parseFloat(document.getElementById('sf-odo').value)||null;
-  const data={user_id:S.user.id,motor_id:S.mid,date,type:document.getElementById('sf-type').value,odo_value:m?.odo_mode==='odometer'?odoR:null,km_manual:m?.odo_mode==='manual'?odoR:null,cost:parseFloat(document.getElementById('sf-cost').value)||null,next_due_date:document.getElementById('sf-nd').value||null,next_due_km:parseFloat(document.getElementById('sf-nk').value)||null,note:document.getElementById('sf-note').value.trim()||null};
+  const data={user_id:S.user.id,motor_id:S.mid,date,type:document.getElementById('sf-type').value,odometer:odoR,cost:parseFloat(document.getElementById('sf-cost').value)||null,next_date:document.getElementById('sf-nd').value||null,next_km:parseFloat(document.getElementById('sf-nk').value)||null,note:document.getElementById('sf-note').value.trim()||null};
   try{
     if(id){await dbU(`rl_service?id=eq.${id}`,data);const i=S.svcs.findIndex(s=>s.id===id);S.svcs[i]={...S.svcs[i],...data}}
     else{const[s]=await dbP('rl_service',{...data,id:nuid()});S.svcs.unshift(s)}
