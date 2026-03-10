@@ -298,7 +298,7 @@ select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='ht
   <div class="fg"><label class="fl">Tanggal & Jam</label><input id="fa-date" type="datetime-local"></div>
   <div class="fg"><label class="fl">Jenis BBM</label><select id="fa-bbm" onchange="fuelCalc()"></select></div>
   <div class="fg"><label class="fl">Total Bayar (Rp)</label><div class="pfx"><span>Rp</span><input id="fa-amt" type="number" placeholder="20000" inputmode="numeric" oninput="fuelCalc()"></div></div>
-  <div class="fg"><label class="fl">Jumlah Liter <span style="color:var(--muted);font-weight:400;text-transform:none">(opsional — otomatis dari bayar ÷ harga)</span></label><input id="fa-ltr" type="number" placeholder="2.0" inputmode="decimal" step="0.01" oninput="fuelCalc()"><div class="fhint" id="fa-lhint"></div></div>
+  <input type="hidden" id="fa-ltr">
   <div class="fg" id="fa-odo-wrap">
     <label class="fl" id="fa-odo-lbl">Jarak Tempuh (km)</label>
     <input id="fa-odo" type="number" inputmode="numeric" oninput="fuelCalc()">
@@ -729,11 +729,9 @@ function openFuelAdd(){
 }
 function fuelCalc(){
   const amt=parseFloat(document.getElementById('fa-amt').value)||0;
-  const ltrIn=parseFloat(document.getElementById('fa-ltr').value)||null;
   const sel=document.getElementById('fa-bbm');const opt=sel.options[sel.selectedIndex];
   const bbmP=opt?parseFloat(opt.dataset.price):0;
-  document.getElementById('fa-lhint').textContent=bbmP?`Harga: ${rp(bbmP)}/L · Liter = bayar ÷ harga`:'';
-  const liters=ltrIn||(amt&&bbmP?amt/bbmP:null);
+  const liters=amt&&bbmP?parseFloat((amt/bbmP).toFixed(3)):null;
   const odoV=parseFloat(document.getElementById('fa-odo').value)||null;
   const m=gm();
   const prev=S.fuel.find(f=>m?.odo_mode==='odometer'?f.odometer!=null:f.km_traveled!=null);
@@ -744,7 +742,7 @@ function fuelCalc(){
   const cpk=kmt&&amt?amt/kmt:null;
   const prev_el=document.getElementById('fa-prev');
   const pb=document.getElementById('fa-prev-body');
-  if(amt>0||liters){
+  if(amt>0){
     prev_el.style.display='';
     pb.innerHTML=(liters?drow('Estimasi Liter',liters.toFixed(2)+'L'):'')+
       (kmt?drow('Jarak tempuh',km(kmt)):'')+
@@ -757,8 +755,7 @@ async function saveFuel(){
   if(!amt||amt<=0){toast('Total bayar wajib diisi','e');return}
   const sel=document.getElementById('fa-bbm');const opt=sel.options[sel.selectedIndex];
   const bbmP=parseFloat(opt.dataset.price);
-  const ltrIn=parseFloat(document.getElementById('fa-ltr').value)||null;
-  const liters=parseFloat((ltrIn||amt/bbmP).toFixed(3));
+  const liters=parseFloat((amt/bbmP).toFixed(3));
   const odoV=parseFloat(document.getElementById('fa-odo').value)||null;
   const m=gm();
   const prev=S.fuel.find(f=>m?.odo_mode==='odometer'?f.odometer!=null:f.km_traveled!=null);
