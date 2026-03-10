@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#0a0a0a">
-<title>Ridelog</title>
+<title>RideLog</title>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#f2f2f7;--bg2:#e5e5ea;--card:#fff;--card2:#f2f2f7;--text:#1c1c1e;--text2:#3c3c43;--muted:#8e8e93;--border:rgba(0,0,0,.1);--accent:#007aff;--al:rgba(0,122,255,.12);--green:#34c759;--gl:rgba(52,199,89,.12);--orange:#ff9500;--ol:rgba(255,149,0,.12);--red:#ff3b30;--rl:rgba(255,59,48,.12);--sh:0 1px 8px rgba(0,0,0,.08);--nav:60px;--hd:56px}
@@ -166,7 +166,7 @@ select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='ht
   <div style="display:flex;flex-direction:column;align-items:center;margin-bottom:36px">
     <div style="font-size:52px;margin-bottom:12px">🏍️</div>
     <div class="a-logo">Ride<span>Log</span></div>
-    <div class="a-sub">Ride Smarter, Maintain Better.</div>
+    <div class="a-sub">Catat perjalanan & perawatan motormu</div>
   </div>
   <div class="a-form">
     <div class="fg"><label class="fl">Username Kamu</label><input id="au" type="text" placeholder="Contoh: budi, motor01" autocapitalize="none" autocomplete="username"></div>
@@ -538,7 +538,7 @@ function openMotorEdit(id){
   document.getElementById('mf-year').value=m.year||'';
   document.getElementById('mf-plate').value=m.plate||'';
   document.getElementById('mf-odo').value=m.odo_mode||'odometer';
-  document.getElementById('mf-oi').value=m.odo_init||'';
+  document.getElementById('mf-oi').value=m.odo_initial||'';
   document.getElementById('sh-mf-t').textContent='Edit Motor';
   document.getElementById('mf-del').style.display='';
   modoChange();osh('sh-mf');
@@ -552,7 +552,7 @@ async function saveMotor(){
   const name=document.getElementById('mf-name').value.trim();
   if(!name){toast('Nama motor wajib diisi','e');return}
   const id=document.getElementById('mf-id').value;
-  const data={name,brand:document.getElementById('mf-brand').value.trim()||null,year:document.getElementById('mf-year').value||null,plate:document.getElementById('mf-plate').value.trim().toUpperCase()||null,odo_mode:document.getElementById('mf-odo').value,odo_init:document.getElementById('mf-oi').value||null,user_id:S.user.id};
+  const data={name,brand:document.getElementById('mf-brand').value.trim()||null,year:document.getElementById('mf-year').value||null,plate:document.getElementById('mf-plate').value.trim().toUpperCase()||null,odo_mode:document.getElementById('mf-odo').value,odo_initial:document.getElementById('mf-oi').value||null,user_id:S.user.id};
   try{
     if(id){await dbU(`rl_motors?id=eq.${id}`,data);const i=S.motors.findIndex(m=>m.id===id);S.motors[i]={...S.motors[i],...data}}
     else{const[m]=await dbP('rl_motors',{...data,id:nuid()});S.motors.push(m);if(!S.mid){S.mid=m.id;localStorage.setItem('rl_mid',m.id);await loadMotor()}}
