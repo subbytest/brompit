@@ -153,6 +153,48 @@ select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='ht
 .svc-chip.on{border-color:var(--accent);background:var(--al);color:var(--accent)}
 .cdot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
 .cdot.baik{background:var(--green)}.cdot.perlu_cek{background:var(--orange)}.cdot.segera_ganti{background:var(--red)}
+/* alert banner */
+.alert-banner{border-radius:14px;overflow:hidden;margin-bottom:4px}
+.alert-item{display:flex;align-items:center;gap:10px;padding:11px 14px;border-bottom:1px solid rgba(255,255,255,.05);cursor:pointer}
+.alert-item:last-child{border-bottom:none}
+.alert-item.r{background:var(--rl)}.alert-item.o{background:var(--ol)}.alert-item.b{background:var(--al)}
+.alert-ico{font-size:20px;flex-shrink:0}
+.alert-body{flex:1;min-width:0}
+.alert-title{font-size:12px;font-weight:700}
+.alert-title.r{color:var(--red)}.alert-title.o{color:var(--orange)}.alert-title.b{color:var(--accent)}
+.alert-sub{font-size:10px;color:var(--muted);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* nav badge */
+.ni{position:relative}
+.ni-badge{position:absolute;top:2px;right:calc(50% - 20px);background:var(--red);color:#fff;font-size:8px;font-weight:800;min-width:14px;height:14px;border-radius:7px;display:flex;align-items:center;justify-content:center;padding:0 3px;border:2px solid var(--card)}
+/* part card with progress */
+.part-card{background:var(--card);border-radius:16px;padding:14px;box-shadow:var(--sh);cursor:pointer;margin-bottom:10px}
+.part-top{display:flex;gap:10px;align-items:flex-start;margin-bottom:10px}
+.part-status{flex-shrink:0;text-align:right}
+.prog-labels{display:flex;justify-content:space-between;font-size:9px;color:var(--muted);margin-top:4px}
+.remind-row{display:flex;gap:6px;margin-top:10px}
+.rr{flex:1;background:var(--card2);border-radius:10px;padding:8px 10px}
+.rr-label{font-size:9px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.04em;margin-bottom:2px}
+.rr-val{font-size:11px;font-weight:800}
+.rr-val.ok{color:var(--green)}.rr-val.warn{color:var(--orange)}.rr-val.bad{color:var(--red)}
+.rr-sub{font-size:9px;color:var(--muted);margin-top:1px}
+/* svc next row */
+.svc-next{display:flex;gap:6px;margin-top:10px;padding-top:10px;border-top:1px solid var(--border)}
+.sn{flex:1;background:var(--card2);border-radius:8px;padding:7px 9px}
+.sn-l{font-size:9px;color:var(--muted);font-weight:700;text-transform:uppercase;margin-bottom:2px}
+.sn-v{font-size:11px;font-weight:800}
+.sn-v.ok{color:var(--green)}.sn-v.warn{color:var(--orange)}.sn-v.bad{color:var(--red)}
+/* chart bars home */
+.hch-bars{display:flex;align-items:flex-end;gap:5px;height:72px}
+.hch-bw{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px}
+.hch-b{width:100%;border-radius:4px 4px 0 0;min-height:3px;position:relative}
+.hch-bv{position:absolute;top:-14px;left:50%;transform:translateX(-50%);font-size:8px;font-weight:700;white-space:nowrap}
+.hch-l{font-size:8px;color:var(--muted);font-weight:600}
+/* summary stat row */
+.ss-row{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--border)}
+.ss-row:last-child{border-bottom:none}
+.ss-label{font-size:12px;color:var(--muted)}
+.ss-val{font-size:13px;font-weight:800}
+.ss-val.g{color:var(--green)}.ss-val.o{color:var(--orange)}.ss-val.b{color:var(--accent)}
 /* photo */
 .ph-prev{width:100%;height:160px;border-radius:12px;object-fit:cover;margin-top:8px;display:none}
 .ph-prev.show{display:block}
@@ -196,6 +238,8 @@ select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='ht
     </div>
     <div style="padding:16px;display:flex;flex-direction:column;gap:12px">
       <div id="h-hero"></div>
+      <div id="h-alerts"></div>
+      <div id="h-charts" style="display:flex;flex-direction:column;gap:12px"></div>
       <div id="h-fuel"></div>
       <div id="h-svc"></div>
       <div id="h-parts"></div>
@@ -231,7 +275,10 @@ select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='ht
   <div class="page" id="pg-summary">
     <div class="hd">
       <div class="hd-title">📊 Ringkasan</div>
-      <div class="mchip" onclick="openMotorSwitch()"><span id="sum-mn">Motor</span><span style="color:var(--muted);font-size:10px">▾</span></div>
+      <div class="hd-row">
+        <div class="mchip" onclick="openMotorSwitch()"><span id="sum-mn">Motor</span><span style="color:var(--muted);font-size:10px">▾</span></div>
+        <button class="hd-btn" onclick="navTo('settings')">⚙️</button>
+      </div>
     </div>
     <div style="padding:16px;display:flex;flex-direction:column;gap:12px">
       <div class="seg">
@@ -242,6 +289,19 @@ select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='ht
       </div>
       <div id="sum-content"></div>
     </div>
+  </div>
+
+  <!-- PARTS PAGE -->
+  <div class="page" id="pg-parts">
+    <div class="hd">
+      <div class="hd-title">🔩 Parts</div>
+      <div class="hd-row">
+        <div class="mchip" onclick="openMotorSwitch()"><span id="p-mn">Motor</span><span style="color:var(--muted);font-size:10px">▾</span></div>
+        <button class="hd-btn" onclick="openPartAdd()">＋</button>
+      </div>
+    </div>
+    <div id="p-filter" style="display:flex;gap:6px;overflow-x:auto;padding:10px 16px 4px"></div>
+    <div id="p-list" style="padding:0 16px 16px"></div>
   </div>
 
   <!-- SETTINGS -->
@@ -263,8 +323,8 @@ select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='ht
     <div class="ni on" onclick="navTo('home')" id="ni-home"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Beranda</div>
     <div class="ni" onclick="navTo('fuel')" id="ni-fuel"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M3 22V8l7-6 7 6v14"/><path d="M12 22v-6"/><rect x="7" y="10" width="4" height="4"/></svg>Bensin</div>
     <div class="ni" onclick="navTo('service')" id="ni-service"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/></svg>Servis</div>
+    <div class="ni" onclick="navTo('parts')" id="ni-parts"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>Parts</div>
     <div class="ni" onclick="navTo('summary')" id="ni-summary"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>Ringkasan</div>
-    <div class="ni" onclick="navTo('settings')" id="ni-settings"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>Setelan</div>
   </nav>
 </div>
 
@@ -358,6 +418,13 @@ select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='ht
   <div class="fg"><label class="fl">Nama Komponen</label><input id="pf-name" type="text" placeholder="cth: Ban Belakang"></div>
   <div class="fg"><label class="fl">Kondisi</label><select id="pf-cond"><option value="baik">✅ Baik</option><option value="perlu_cek">⚠️ Perlu Dicek</option><option value="segera_ganti">🔴 Segera Ganti</option></select></div>
   <div class="fr"><div class="fg"><label class="fl">Tgl Pasang</label><input id="pf-date" type="date"></div><div class="fg"><label class="fl" id="pf-km-lbl">Km Pasang</label><input id="pf-km" type="number" placeholder="12000" inputmode="numeric"></div></div>
+  <div class="fg"><label class="fl">Reminder Ganti</label>
+    <div class="fr">
+      <div><label class="fl">+ km sejak pasang</label><input id="pf-lkm" type="number" placeholder="cth: 5000" inputmode="numeric"></div>
+      <div><label class="fl">Tanggal ganti</label><input id="pf-ldate" type="date"></div>
+    </div>
+    <div class="fhint">Notif muncul kalau salah satu tercapai duluan</div>
+  </div>
   <div class="fg"><label class="fl">Catatan</label><input id="pf-note" type="text" placeholder="cth: IRC NR77"></div>
   <div class="fg"><label class="fl">Foto <span style="color:var(--muted);font-weight:400;text-transform:none">(opsional)</span></label>
     <div class="ph-up" onclick="document.getElementById('pf-photo-in').click()"><span>📷</span><span>Tap untuk pilih foto</span></div>
@@ -433,6 +500,7 @@ function navTo(p){
   if(p==='home')rHome();
   if(p==='fuel')rFuel();
   if(p==='service')rSvc();
+  if(p==='parts')rParts();
   if(p==='summary')rSum();
   if(p==='settings')rSet();
 }
@@ -513,24 +581,68 @@ async function switchMotor(id){
 }
 function updChips(){
   const m=gm();const name=m?m.name:'Pilih Motor';
-  ['hd-mn','f-mn','s-mn','sum-mn'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=name});
+  ['hd-mn','f-mn','s-mn','p-mn','sum-mn'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=name});
+}
+function curOdo(){
+  const m=gm();if(!m)return null;
+  if(m.odo_mode==='odometer'){return S.fuel.find(f=>f.odometer)?.odometer||m.odo_initial||null}
+  const total=S.fuel.reduce((a,f)=>a+(f.km_traveled||0),0);
+  return(m.odo_initial||0)+total;
+}
+function partStatus(p){
+  const now=new Date();const odo=curOdo();
+  let kmStatus=null,dateStatus=null;
+  if(p.limit_km&&p.installed_km!=null&&odo!=null){
+    const used=odo-p.installed_km;const remaining=p.limit_km-used;const pct=used/p.limit_km;
+    kmStatus={used,remaining,pct,limit:p.limit_km};
+  }
+  if(p.limit_date){const days=Math.ceil((new Date(p.limit_date)-now)/864e5);dateStatus={days,date:p.limit_date}}
+  let level='ok';
+  if(kmStatus&&kmStatus.remaining<=0)level='bad';
+  else if(dateStatus&&dateStatus.days<=0)level='bad';
+  else if(kmStatus&&(kmStatus.pct>=0.8||kmStatus.remaining<500))level='warn';
+  else if(dateStatus&&dateStatus.days<=14)level='warn';
+  return{kmStatus,dateStatus,level};
+}
+function svcStatus(s){
+  const now=new Date();const odo=curOdo();
+  let kmDays=null;
+  if(s.next_km&&odo!=null)kmDays=s.next_km-odo;
+  let dateDays=null;
+  if(s.next_date)dateDays=Math.ceil((new Date(s.next_date)-now)/864e5);
+  const bad=(kmDays!=null&&kmDays<=0)||(dateDays!=null&&dateDays<=0);
+  const warn=(kmDays!=null&&kmDays>0&&kmDays<500)||(dateDays!=null&&dateDays>0&&dateDays<=14);
+  return{kmDays,dateDays,bad,warn,level:bad?'bad':warn?'warn':'ok'};
+}
+function updBadges(){
+  const svcBad=S.svcs.filter(s=>svcStatus(s).level!=='ok').length;
+  const partBad=S.parts.filter(p=>partStatus(p).level!=='ok').length;
+  [['ni-service',svcBad],['ni-parts',partBad]].forEach(([id,count])=>{
+    const el=document.getElementById(id);if(!el)return;
+    let badge=el.querySelector('.ni-badge');
+    if(count>0){if(!badge){badge=document.createElement('div');badge.className='ni-badge';el.prepend(badge)}badge.textContent=count}
+    else{if(badge)badge.remove()}
+  });
 }
 
 // ── HOME ─────────────────────────────────────────────
 function rHome(){
-  updChips();
+  updChips();updBadges();
   const m=gm();
   if(!m){
-    document.getElementById('h-hero').innerHTML=`<div class="card text-center" style="padding:32px;text-align:center"><div style="font-size:40px;margin-bottom:12px">🏍️</div><div style="font-weight:700;margin-bottom:8px">Belum ada motor</div><div style="color:var(--muted);font-size:13px;margin-bottom:16px">Tambah motor untuk mulai mencatat</div><button class="btn btn-p" onclick="openMotorAdd()">+ Tambah Motor</button></div>`;
-    ['h-fuel','h-svc','h-parts'].forEach(id=>document.getElementById(id).innerHTML='');return;
+    document.getElementById('h-hero').innerHTML=`<div class="card" style="padding:32px;text-align:center"><div style="font-size:40px;margin-bottom:12px">🏍️</div><div style="font-weight:700;margin-bottom:8px">Belum ada motor</div><div style="color:var(--muted);font-size:13px;margin-bottom:16px">Tambah motor untuk mulai mencatat</div><button class="btn btn-p" onclick="openMotorAdd()">+ Tambah Motor</button></div>`;
+    ['h-alerts','h-charts','h-fuel','h-svc','h-parts'].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML=''});return;
   }
-  // calc
+  const now=new Date();
   const kmls=S.fuel.filter(f=>f.km_per_liter&&f.km_per_liter>0&&f.km_per_liter<200).map(f=>f.km_per_liter);
   const avgKml=kmls.length?(kmls.reduce((a,b)=>a+b,0)/kmls.length).toFixed(1):null;
-  const now=new Date();
   const moCost=S.fuel.filter(f=>{const d=new Date(f.date);return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear()}).reduce((a,f)=>a+(f.amount_paid||0),0);
-  const nxtSvc=S.svcs.filter(s=>s.next_date).sort((a,b)=>new Date(a.next_date)-new Date(b.next_date))[0];
-  const nxtDays=nxtSvc?Math.ceil((new Date(nxtSvc.next_date)-now)/(864e5)):null;
+  const nxtSvc=S.svcs.filter(s=>s.next_date||s.next_km).sort((a,b)=>{
+    const da=a.next_date?Math.ceil((new Date(a.next_date)-now)/864e5):9999;
+    const db=b.next_date?Math.ceil((new Date(b.next_date)-now)/864e5):9999;
+    return da-db;
+  })[0];
+  const nxtDays=nxtSvc?.next_date?Math.ceil((new Date(nxtSvc.next_date)-now)/864e5):null;
   document.getElementById('h-hero').innerHTML=`<div class="mhero">
     <div class="mhero-name">${m.name}</div>
     <div class="mhero-sub">${[m.brand,m.year,m.plate].filter(Boolean).join(' · ')}</div>
@@ -540,6 +652,42 @@ function rHome(){
       <div class="mhstat"><div class="mhstat-n">${nxtDays!=null?(nxtDays<0?'Telat!':nxtDays+'hr'):'—'}</div><div class="mhstat-l">servis lagi</div></div>
     </div>
   </div>`;
+  // alert banners — gabung svc + parts alerts
+  const alerts=[];
+  S.svcs.forEach(s=>{const st=svcStatus(s);if(st.level!=='ok'){
+    const d=st.dateDays;const kd=st.kmDays;
+    const sub=[];if(d!=null)sub.push(d<=0?`Telat ${Math.abs(d)} hari`:`${d} hari lagi`);if(kd!=null)sub.push(kd<=0?`Lewat ${Math.abs(Math.round(kd))} km`:`sisa ${Math.round(kd)} km`);
+    alerts.push({ico:svcLabel(s.type).split(' ')[0],title:svcLabel(s.type).split(' ').slice(1).join(' ')||svcLabel(s.type),sub:sub.join(' · '),level:st.level,goto:"navTo('service')"});
+  }});
+  S.parts.filter(p=>p.limit_km||p.limit_date).forEach(p=>{const st=partStatus(p);if(st.level!=='ok'){
+    const sub=[];
+    if(st.kmStatus)sub.push(st.kmStatus.remaining<=0?`Lewat ${Math.abs(Math.round(st.kmStatus.remaining))} km`:`sisa ${Math.round(st.kmStatus.remaining)} km`);
+    if(st.dateStatus)sub.push(st.dateStatus.days<=0?`Telat ${Math.abs(st.dateStatus.days)} hari`:`${st.dateStatus.days} hari lagi`);
+    alerts.push({ico:'🔩',title:p.name,sub:sub.join(' · '),level:st.level,goto:"navTo('parts')"});
+  }});
+  const alertEl=document.getElementById('h-alerts');
+  if(alertEl)alertEl.innerHTML=alerts.length?`<div class="alert-banner">${alerts.map(a=>`<div class="alert-item ${a.level==='bad'?'r':'o'}" onclick="${a.goto}"><div class="alert-ico">${a.ico}</div><div class="alert-body"><div class="alert-title ${a.level==='bad'?'r':'o'}">${a.title}</div><div class="alert-sub">${a.sub}</div></div><div class="badge ${a.level==='bad'?'r':'o'}">${a.level==='bad'?'Segera':'⚠️'}</div></div>`).join('')}</div>`:'';
+  // chart kml per 6 isian terakhir
+  const kmlData=S.fuel.filter(f=>f.km_per_liter&&f.km_per_liter>0&&f.km_per_liter<200).slice(0,7).reverse();
+  // biaya per bulan 6 bulan terakhir
+  const costByMonth={};
+  S.fuel.forEach(f=>{if(!f.date)return;const d=new Date(f.date);const k=`${d.getFullYear()}-${d.getMonth()}`;if(!costByMonth[k])costByMonth[k]={fuel:0,svc:0,d};costByMonth[k].fuel+=(f.amount_paid||0);costByMonth[k].d=d;});
+  S.svcs.forEach(s=>{if(!s.date)return;const d=new Date(s.date);const k=`${d.getFullYear()}-${d.getMonth()}`;if(!costByMonth[k])costByMonth[k]={fuel:0,svc:0,d};costByMonth[k].svc+=(s.cost||0);});
+  const months=['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+  const costArr=Object.entries(costByMonth).sort((a,b)=>a[1].d-b[1].d).slice(-6).map(([,v])=>({l:months[v.d.getMonth()],v:v.fuel+v.svc}));
+  const chartsEl=document.getElementById('h-charts');
+  if(chartsEl){
+    let html='';
+    if(kmlData.length>1){
+      const mx=Math.max(...kmlData.map(f=>f.km_per_liter));
+      html+=`<div class="card"><div style="font-size:13px;font-weight:800;margin-bottom:2px">📈 Konsumsi km/L</div><div style="font-size:10px;color:var(--muted);margin-bottom:12px">${kmlData.length} isian terakhir</div><div class="hch-bars">${kmlData.map((f,i)=>{const h=Math.round((f.km_per_liter/mx)*64);const hi=i===kmlData.length-1;return`<div class="hch-bw"><div class="hch-b" style="height:${h}px;background:${hi?'var(--accent)':'var(--al)'}">${hi?`<span class="hch-bv" style="color:var(--accent)">${f.km_per_liter.toFixed(1)}</span>`:''}</div><div class="hch-l">${fmtDS(f.date)}</div></div>`}).join('')}</div></div>`;
+    }
+    if(costArr.length>1){
+      const mx2=Math.max(...costArr.map(c=>c.v));
+      html+=`<div class="card"><div style="font-size:13px;font-weight:800;margin-bottom:2px">💸 Pengeluaran Motor</div><div style="font-size:10px;color:var(--muted);margin-bottom:12px">BBM + Servis per bulan</div><div class="hch-bars">${costArr.map((c,i)=>{const h=Math.round((c.v/mx2)*64);const hi=i===costArr.length-1;return`<div class="hch-bw"><div class="hch-b" style="height:${h}px;background:${hi?'var(--green)':'var(--gl)'}">${hi?`<span class="hch-bv" style="color:var(--green)">${rp(c.v).replace('Rp ','')}</span>`:''}</div><div class="hch-l">${c.l}</div></div>`}).join('')}</div></div>`;
+    }
+    chartsEl.innerHTML=html;
+  }
   const lf=S.fuel[0];
   document.getElementById('h-fuel').innerHTML=`<div class="card" style="cursor:pointer" onclick="navTo('fuel')">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px"><div style="font-weight:800;font-size:15px">⛽ Bensin</div><span style="color:var(--accent);font-size:12px;font-weight:700">Lihat semua ›</span></div>
@@ -552,10 +700,10 @@ function rHome(){
     ${ls?`<div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-size:13px;color:var(--muted)">${svcLabel(ls.type)} · ${fmtDS(ls.date)}</div><div style="font-weight:700;margin-top:2px">${rp(ls.cost)}</div></div>${nxtDays!=null?`<div class="badge ${nxtDays<0?'r':nxtDays<=7?'o':'g'}">${nxtDays<0?'Telat!':nxtDays+'hr lagi'}</div>`:''}</div>`:
     '<div style="color:var(--muted);font-size:13px">Belum ada data servis</div>'}
   </div>`;
-  const bad=S.parts.filter(p=>p.condition!=='baik');
-  document.getElementById('h-parts').innerHTML=`<div class="card" style="cursor:pointer" onclick="openPartsList()">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px"><div style="font-weight:800;font-size:15px">🔩 Komponen</div><span style="color:var(--accent);font-size:12px;font-weight:700">Lihat semua ›</span></div>
-    ${S.parts.length?`<div style="display:flex;justify-content:space-between;align-items:center"><div style="font-size:13px;color:var(--muted)">${S.parts.length} komponen tercatat</div>${bad.length?`<div class="badge ${bad.some(p=>p.condition==='segera_ganti')?'r':'o'}">${bad.length} perlu perhatian</div>`:'<div class="badge g">Semua baik</div>'}</div>`:
+  const badParts=S.parts.filter(p=>partStatus(p).level!=='ok');
+  document.getElementById('h-parts').innerHTML=`<div class="card" style="cursor:pointer" onclick="navTo('parts')">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px"><div style="font-weight:800;font-size:15px">🔩 Parts</div><span style="color:var(--accent);font-size:12px;font-weight:700">Lihat semua ›</span></div>
+    ${S.parts.length?`<div style="display:flex;justify-content:space-between;align-items:center"><div style="font-size:13px;color:var(--muted)">${S.parts.length} komponen</div>${badParts.length?`<div class="badge ${badParts.some(p=>partStatus(p).level==='bad')?'r':'o'}">${badParts.length} perlu perhatian</div>`:'<div class="badge g">Semua aman</div>'}</div>`:
     '<div style="color:var(--muted);font-size:13px">Belum ada data komponen</div>'}
   </div>`;
 }
@@ -773,22 +921,44 @@ async function saveFuel(){
 
 // ── SERVICE PAGE ──────────────────────────────────────
 function rSvc(){
-  updChips();
+  updChips();updBadges();
   const rem=document.getElementById('s-rem'),li=document.getElementById('s-list');
   if(!gm()){rem.innerHTML='';li.innerHTML='';return}
-  const now=new Date();
-  const ups=S.svcs.filter(s=>s.next_date).sort((a,b)=>new Date(a.next_date)-new Date(b.next_date)).slice(0,3);
-  rem.innerHTML=ups.length?`<div class="sec-title" style="padding:0 0 10px">Reminder</div>`+ups.map(s=>{
-    const d=Math.ceil((new Date(s.next_date)-now)/864e5);
-    return`<div class="card" style="margin-bottom:8px;display:flex;align-items:center;justify-content:space-between"><div><div style="font-weight:700;font-size:14px">${svcLabel(s.type)}</div><div style="font-size:12px;color:var(--muted)">${fmtD(s.next_date)}</div></div><div class="badge ${d<0?'r':d<=7?'o':'g'}">${d<0?'Telat '+Math.abs(d)+'hr':d===0?'Hari ini':d+'hr lagi'}</div></div>`;
-  }).join(''):'';
+  const now=new Date();const odo=curOdo();
+  // reminder banners
+  const alerts=S.svcs.filter(s=>svcStatus(s).level!=='ok').sort((a,b)=>{
+    const sa=svcStatus(a),sb=svcStatus(b);
+    const va=sa.bad?-1:0,vb=sb.bad?-1:0;return va-vb;
+  });
+  rem.innerHTML=alerts.length?`<div style="padding:12px 16px 0"><div class="alert-banner">${alerts.map(s=>{
+    const st=svcStatus(s);
+    const sub=[];if(st.dateDays!=null)sub.push(st.dateDays<=0?`Telat ${Math.abs(st.dateDays)} hari`:`${st.dateDays} hari lagi`);if(st.kmDays!=null)sub.push(st.kmDays<=0?`Lewat ${Math.abs(Math.round(st.kmDays))} km`:`sisa ${Math.round(st.kmDays)} km`);
+    return`<div class="alert-item ${st.bad?'r':'o'}" onclick="openSvcEdit('${s.id}')"><div class="alert-ico">${svcLabel(s.type).split(' ')[0]}</div><div class="alert-body"><div class="alert-title ${st.bad?'r':'o'}">${svcLabel(s.type).split(' ').slice(1).join(' ')||svcLabel(s.type)}</div><div class="alert-sub">${sub.join(' · ')}</div></div><div class="badge ${st.bad?'r':'o'}">${st.bad?'Segera':'⚠️'}</div></div>`;
+  }).join('')}</div></div>`:''
   if(!S.svcs.length){li.innerHTML=`<div class="empty"><div class="empty-ico">🔧</div><div class="empty-title">Belum ada data servis</div><div class="empty-sub">Tap + untuk mencatat servis</div></div>`;return}
   li.innerHTML=S.svcs.map(s=>{
-    const d=s.next_date?Math.ceil((new Date(s.next_date)-now)/864e5):null;
-    return`<div class="li" style="cursor:pointer" onclick="openSvcEdit('${s.id}')">
-      <div class="li-ico o">🔧</div>
-      <div class="li-body"><div class="li-title">${svcLabel(s.type)}</div><div class="li-sub">${fmtD(s.date)}${s.odometer?' · '+km(s.odometer):''}${s.note?' · '+s.note:''}</div></div>
-      <div class="li-right"><div class="li-val">${rp(s.cost)}</div>${d!=null?`<div class="badge ${d<0?'r':d<=7?'o':'g'}" style="margin-top:4px">${d<0?'Telat':d+'hr'}</div>`:''}</div>
+    const st=svcStatus(s);
+    const nextKmOdo=s.next_km;
+    const nextKmRem=nextKmOdo&&odo!=null?nextKmOdo-odo:null;
+    const nextDateD=s.next_date?Math.ceil((new Date(s.next_date)-now)/864e5):null;
+    const hasNext=nextKmOdo||s.next_date;
+    return`<div style="background:var(--card);border-radius:16px;padding:14px;margin-bottom:10px;cursor:pointer" onclick="openSvcEdit('${s.id}')">
+      <div style="display:flex;gap:10px;align-items:flex-start">
+        <div class="li-ico o" style="width:40px;height:40px;border-radius:11px;font-size:20px">${svcLabel(s.type).split(' ')[0]}</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:13px;font-weight:800">${svcLabel(s.type).split(' ').slice(1).join(' ')||svcLabel(s.type)}</div>
+          <div style="font-size:10px;color:var(--muted);margin-top:2px">${fmtD(s.date)}${s.odometer?' · '+km(s.odometer):''}${s.note?' · '+s.note:''}</div>
+        </div>
+        <div style="text-align:right;flex-shrink:0">
+          <div style="font-size:13px;font-weight:800">${rp(s.cost)}</div>
+          ${hasNext?`<div class="badge ${st.bad?'r':st.warn?'o':'g'}" style="margin-top:4px">${st.bad?'Segera':st.warn?'⚠️ Cek':'Aman'}</div>`:''}
+        </div>
+      </div>
+      ${hasNext?`<div class="svc-next">
+        <div class="sn"><div class="sn-l">📏 Next km</div><div class="sn-v ${nextKmRem!=null?(nextKmRem<=0?'bad':nextKmRem<500?'warn':'ok'):'ok'}">${nextKmOdo?km(nextKmOdo):'—'}</div></div>
+        <div class="sn"><div class="sn-l">📅 Next tgl</div><div class="sn-v ${nextDateD!=null?(nextDateD<=0?'bad':nextDateD<=14?'warn':'ok'):'ok'}">${s.next_date?fmtD(s.next_date):'—'}</div></div>
+        <div class="sn"><div class="sn-l">⚡ Status</div><div class="sn-v ${st.bad?'bad':st.warn?'warn':'ok'}">${st.bad?'Segera!':st.warn?'Hampir':'Aman'}</div></div>
+      </div>`:''}
     </div>`;
   }).join('');
 }
@@ -847,20 +1017,61 @@ async function delSvc(){
   }catch(err){toast('Gagal: '+err.message,'e')}
 }
 
-// ── PARTS ─────────────────────────────────────────────
-function openPartsList(){
-  const b=document.getElementById('sh-pl-body');
-  b.innerHTML=!S.parts.length?`<div class="empty"><div class="empty-ico">🔩</div><div class="empty-title">Belum ada komponen</div></div>`:
-    S.parts.map(p=>`<div class="li" style="cursor:pointer" onclick="openPartEdit('${p.id}')">
-      <div class="cdot ${p.condition}" style="margin-right:4px"></div>
-      <div class="li-body"><div class="li-title">${p.name}</div><div class="li-sub">${p.installed_date?fmtD(p.installed_date):'—'}${p.note?' · '+p.note:''}</div></div>
-      <div class="badge ${p.condition==='baik'?'g':p.condition==='perlu_cek'?'o':'r'}">${p.condition==='baik'?'Baik':p.condition==='perlu_cek'?'Perlu cek':'Segera ganti'}</div>
-    </div>`).join('');
-  osh('sh-pl');
+// ── PARTS PAGE ────────────────────────────────────────
+let partFilter='all';
+function rParts(){
+  updChips();updBadges();
+  const fl=document.getElementById('p-filter'),li=document.getElementById('p-list');
+  if(!gm()){fl.innerHTML='';li.innerHTML='';return}
+  const odo=curOdo();
+  const filters=[['all','Semua'],['warn','⚠️ Perlu Cek'],['ok','✅ Baik']];
+  fl.innerHTML=filters.map(([k,l])=>`<div class="svc-chip ${partFilter===k?'on':''}" onclick="setPartFilter('${k}')">${l}</div>`).join('');
+  if(!S.parts.length){li.innerHTML=`<div class="empty"><div class="empty-ico">🔩</div><div class="empty-title">Belum ada komponen</div><div class="empty-sub">Tap ＋ untuk tambah komponen</div></div>`;return}
+  const show=S.parts.filter(p=>{
+    const st=partStatus(p);
+    if(partFilter==='warn')return st.level!=='ok';
+    if(partFilter==='ok')return st.level==='ok';
+    return true;
+  });
+  if(!show.length){li.innerHTML=`<div class="empty"><div class="empty-ico">🔍</div><div class="empty-title">Tidak ada komponen</div><div class="empty-sub">Tidak ada komponen di filter ini</div></div>`;return}
+  li.innerHTML=show.map(p=>{
+    const st=partStatus(p);
+    const condCol=st.level==='bad'?'r':st.level==='warn'?'o':'g';
+    const condLabel=st.level==='bad'?'Kritis':st.level==='warn'?'Perlu Cek':'Baik';
+    let progHtml='',remHtml='';
+    if(st.kmStatus){
+      const pct=Math.min(st.kmStatus.pct,1);
+      const col=pct>=1?'var(--red)':pct>=0.8?'var(--orange)':'var(--green)';
+      progHtml=`<div class="prog"><div class="prog-f" style="width:${(pct*100).toFixed(0)}%;background:${col}"></div></div>
+      <div class="prog-labels"><span>0 km</span><span style="color:${col};font-weight:700">${st.kmStatus.remaining>0?'Sisa '+Math.round(st.kmStatus.remaining)+' km':'Lewat '+Math.abs(Math.round(st.kmStatus.remaining))+' km'}</span><span>${st.kmStatus.limit.toLocaleString('id')} km</span></div>`;
+    }
+    if(st.kmStatus||st.dateStatus){
+      remHtml=`<div class="remind-row">
+        <div class="rr"><div class="rr-label">📏 Sisa km</div><div class="rr-val ${st.kmStatus?(st.kmStatus.remaining<=0?'bad':st.kmStatus.pct>=0.8?'warn':'ok'):'ok'}">${st.kmStatus?(st.kmStatus.remaining>0?Math.round(st.kmStatus.remaining)+' km':'Lewat '+Math.abs(Math.round(st.kmStatus.remaining))+' km'):'—'}</div>${st.kmStatus?`<div class="rr-sub">limit ${st.kmStatus.limit.toLocaleString('id')} km</div>`:''}</div>
+        <div class="rr"><div class="rr-label">📅 Sisa hari</div><div class="rr-val ${st.dateStatus?(st.dateStatus.days<=0?'bad':st.dateStatus.days<=14?'warn':'ok'):'ok'}">${st.dateStatus?(st.dateStatus.days<=0?'Telat '+Math.abs(st.dateStatus.days)+'hr':st.dateStatus.days+' hari'):'—'}</div>${st.dateStatus?`<div class="rr-sub">${fmtD(st.dateStatus.date)}</div>`:''}</div>
+      </div>`;
+    }
+    return`<div style="background:var(--card);border-radius:16px;padding:14px;margin-bottom:10px;cursor:pointer" onclick="openPartEdit('${p.id}')">
+      <div class="part-top">
+        <div class="li-ico ${condCol}" style="width:40px;height:40px;border-radius:11px;font-size:20px">${p.name.charAt(0).toUpperCase()}</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:13px;font-weight:800">${p.name}</div>
+          <div style="font-size:10px;color:var(--muted);margin-top:2px">${p.installed_date?'Dipasang '+fmtD(p.installed_date):'—'}${p.installed_km?' · km '+p.installed_km.toLocaleString('id'):''}${p.note?' · '+p.note:''}</div>
+        </div>
+        <div class="part-status">
+          <div class="badge ${condCol}">${condLabel}</div>
+          ${odo&&p.installed_km?`<div class="li-vsub" style="margin-top:4px">${(odo-p.installed_km).toLocaleString('id')} km</div>`:''}
+        </div>
+      </div>
+      ${progHtml}${remHtml}
+    </div>`;
+  }).join('');
 }
+function setPartFilter(f){partFilter=f;rParts()}
+function openPartsList(){navTo('parts')}
 function openPartAdd(){
   if(!S.mid){toast('Pilih motor dulu','e');return}
-  ['pf-id','pf-name','pf-km','pf-note'].forEach(id=>document.getElementById(id).value='');
+  ['pf-id','pf-name','pf-km','pf-note','pf-lkm','pf-ldate'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('pf-date').value=todayD();document.getElementById('pf-cond').value='baik';
   document.getElementById('pf-photo-prev').classList.remove('show');document.getElementById('pf-photo-prev').src='';document.getElementById('pf-photo-in').value='';
   document.getElementById('sh-pf-t').textContent='Tambah Komponen';document.getElementById('pf-del').style.display='none';
@@ -869,9 +1080,9 @@ function openPartAdd(){
 }
 function openPartEdit(id){
   const p=S.parts.find(x=>x.id===id);if(!p)return;
-  csh('sh-pl');
   document.getElementById('pf-id').value=p.id;document.getElementById('pf-name').value=p.name;document.getElementById('pf-cond').value=p.condition;
   document.getElementById('pf-date').value=p.installed_date||'';document.getElementById('pf-km').value=p.installed_km||'';document.getElementById('pf-note').value=p.note||'';
+  document.getElementById('pf-lkm').value=p.limit_km||'';document.getElementById('pf-ldate').value=p.limit_date||'';
   if(p.photo){document.getElementById('pf-photo-prev').src=p.photo;document.getElementById('pf-photo-prev').classList.add('show')}
   else{document.getElementById('pf-photo-prev').classList.remove('show');document.getElementById('pf-photo-prev').src=''}
   document.getElementById('pf-photo-in').value='';
@@ -887,11 +1098,11 @@ async function savePart(){
   const id=document.getElementById('pf-id').value;
   const photoEl=document.getElementById('pf-photo-prev');
   const photo=photoEl.classList.contains('show')?photoEl.src:null;
-  const data={user_id:S.user.id,motor_id:S.mid,name,condition:document.getElementById('pf-cond').value,installed_date:document.getElementById('pf-date').value||null,installed_km:parseFloat(document.getElementById('pf-km').value)||null,note:document.getElementById('pf-note').value.trim()||null,photo,updated_at:new Date().toISOString()};
+  const data={user_id:S.user.id,motor_id:S.mid,name,condition:document.getElementById('pf-cond').value,installed_date:document.getElementById('pf-date').value||null,installed_km:parseFloat(document.getElementById('pf-km').value)||null,limit_km:parseFloat(document.getElementById('pf-lkm').value)||null,limit_date:document.getElementById('pf-ldate').value||null,note:document.getElementById('pf-note').value.trim()||null,photo,updated_at:new Date().toISOString()};
   try{
     if(id){await dbU(`rl_parts?id=eq.${id}`,data);const i=S.parts.findIndex(p=>p.id===id);S.parts[i]={...S.parts[i],...data}}
     else{const[p]=await dbP('rl_parts',{...data,id:nuid()});S.parts.push(p)}
-    csh('sh-pf');toast(id?'Komponen diperbarui':'Komponen ditambahkan','ok');rHome();
+    csh('sh-pf');toast(id?'Komponen diperbarui':'Komponen ditambahkan','ok');rParts();rHome();
   }catch(err){toast('Gagal: '+err.message,'e')}
 }
 async function delPart(){
@@ -899,7 +1110,7 @@ async function delPart(){
   if(!confirm('Hapus komponen ini?'))return;
   try{
     await dbU(`rl_parts?id=eq.${id}`,{deleted_at:new Date().toISOString()});
-    S.parts=S.parts.filter(p=>p.id!==id);csh('sh-pf');toast('Komponen dihapus','ok');rHome();
+    S.parts=S.parts.filter(p=>p.id!==id);csh('sh-pf');toast('Komponen dihapus','ok');rParts();rHome();
   }catch(err){toast('Gagal: '+err.message,'e')}
 }
 
@@ -925,17 +1136,94 @@ function rSum(){
   const kmls=fuel.filter(f=>f.km_per_liter&&f.km_per_liter>0&&f.km_per_liter<200).map(f=>f.km_per_liter);
   const avgKml=kmls.length?kmls.reduce((a,b)=>a+b,0)/kmls.length:null;
   const totKm=fuel.filter(f=>f.km_traveled).reduce((a,f)=>a+(f.km_traveled||0),0);
-  el.innerHTML=`<div class="sg">
-    <div class="sb" style="grid-column:span 2"><div class="sv accent">${rp(fc+sc)}</div><div class="sl">Total pengeluaran</div></div>
+  const cpk=totKm&&(fc+sc)?(fc+sc)/totKm:null;
+  const periodLabel={week:'Minggu Ini',month:'Bulan Ini',year:'Tahun Ini',all:'Semua Waktu'}[sumP];
+  // biaya per kategori servis
+  const svcByCat={};svcs.forEach(s=>{const k=svcLabel(s.type);svcByCat[k]=(svcByCat[k]||0)+(s.cost||0)});
+  // chart kml
+  const kmlData=fuel.filter(f=>f.km_per_liter&&f.km_per_liter>0&&f.km_per_liter<200).slice(0,8).reverse();
+  let chartHtml='';
+  if(kmlData.length>1){
+    const mx=Math.max(...kmlData.map(f=>f.km_per_liter));
+    chartHtml=`<div class="card mt12"><div style="font-size:13px;font-weight:800;margin-bottom:2px">📈 Konsumsi km/L</div><div style="font-size:10px;color:var(--muted);margin-bottom:10px">${kmlData.length} isian terakhir · rata-rata ${avgKml?.toFixed(1)||'—'} km/L</div><div class="hch-bars">${kmlData.map((f,i)=>{const h=Math.round((f.km_per_liter/mx)*64);const hi=i===kmlData.length-1;return`<div class="hch-bw"><div class="hch-b" style="height:${h}px;background:${hi?'var(--accent)':'var(--al)'}">${hi?`<span class="hch-bv" style="color:var(--accent)">${f.km_per_liter.toFixed(1)}</span>`:''}</div><div class="hch-l">${fmtDS(f.date)}</div></div>`}).join('')}</div></div>`;
+  }
+  el.innerHTML=`
+  <div class="sg">
+    <div class="sb" style="grid-column:span 2;background:var(--accent)"><div class="sv" style="color:#fff">${rp(fc+sc)}</div><div class="sl" style="color:rgba(255,255,255,.7)">Total ${periodLabel}</div></div>
     <div class="sb"><div class="sv o">${rp(fc)}</div><div class="sl">Bensin</div></div>
     <div class="sb"><div class="sv">${rp(sc)}</div><div class="sl">Servis</div></div>
-    <div class="sb"><div class="sv g">${avgKml?avgKml.toFixed(1):'—'}</div><div class="sl">Rata-rata km/L</div></div>
+    <div class="sb"><div class="sv g">${avgKml?avgKml.toFixed(1)+'':'—'}</div><div class="sl">km/L rata-rata</div></div>
+    <div class="sb"><div class="sv accent">${totKm?km(totKm):'—'}</div><div class="sl">Jarak tempuh</div></div>
     <div class="sb"><div class="sv">${fl.toFixed(1)} L</div><div class="sl">Total liter</div></div>
+    <div class="sb"><div class="sv ${cpk?'r':''}">${cpk?'Rp '+Math.round(cpk)+'/km':'—'}</div><div class="sl">Biaya per km</div></div>
   </div>
-  ${totKm>0?`<div class="card mt12"><div class="sec-title" style="padding:0 0 8px">Jarak Tempuh</div><div style="font-size:28px;font-weight:800">${km(totKm)}</div>${fc+sc&&totKm?`<div style="font-size:13px;color:var(--muted);margin-top:4px">Rata-rata Rp ${((fc+sc)/totKm).toFixed(0)}/km</div>`:''}  </div>`:''}
-  ${fuel.length?`<div class="card mt12"><div class="sec-title" style="padding:0 0 8px">Isian Bensin (${fuel.length}x)</div>${fuel.slice(0,5).map(f=>`<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border)"><span style="color:var(--muted);font-size:12px">${fmtDS(f.date)}</span><span style="font-weight:700;font-size:12px">${rp(f.amount_paid)} · ${f.km_per_liter?f.km_per_liter.toFixed(1)+' km/L':'—'}</span></div>`).join('')}${fuel.length>5?`<div style="color:var(--muted);font-size:12px;padding-top:6px">+${fuel.length-5} lainnya</div>`:''}</div>`:''}
-  ${svcs.length?`<div class="card mt12"><div class="sec-title" style="padding:0 0 8px">Servis (${svcs.length}x)</div>${svcs.map(s=>`<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border)"><span style="color:var(--muted);font-size:12px">${svcLabel(s.type)} · ${fmtDS(s.date)}</span><span style="font-weight:700;font-size:12px">${rp(s.cost)}</span></div>`).join('')}</div>`:''}
-  ${!fuel.length&&!svcs.length?`<div class="empty"><div class="empty-ico">📊</div><div class="empty-title">Tidak ada data</div><div class="empty-sub">Belum ada isian bensin atau servis di periode ini</div></div>`:''}`;
+  ${chartHtml}
+  ${Object.keys(svcByCat).length?`<div class="card mt12"><div class="sec-title" style="padding:0 0 10px">Biaya Servis per Kategori</div>${Object.entries(svcByCat).map(([k,v])=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border)"><span style="font-size:13px">${k}</span><span style="font-size:13px;font-weight:800">${rp(v)}</span></div>`).join('')}</div>`:''}
+  ${fuel.length?`<div class="card mt12"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><div class="sec-title" style="padding:0">Isian Bensin (${fuel.length}x)</div></div>${fuel.slice(0,8).map(f=>`<div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border)"><span style="color:var(--muted);font-size:12px">${fmtDS(f.date)}</span><span style="font-weight:700;font-size:12px">${rp(f.amount_paid)} · ${f.km_per_liter?f.km_per_liter.toFixed(1)+' km/L':'—'}</span></div>`).join('')}${fuel.length>8?`<div style="color:var(--muted);font-size:12px;padding-top:6px">+${fuel.length-8} lainnya</div>`:''}</div>`:''}
+  ${svcs.length?`<div class="card mt12"><div class="sec-title" style="padding:0 0 10px">Servis (${svcs.length}x)</div>${svcs.map(s=>`<div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border)"><span style="font-size:12px">${svcLabel(s.type)} · <span style="color:var(--muted)">${fmtDS(s.date)}</span></span><span style="font-weight:800;font-size:12px">${rp(s.cost)}</span></div>`).join('')}</div>`:''}
+  ${!fuel.length&&!svcs.length?`<div class="empty"><div class="empty-ico">📊</div><div class="empty-title">Tidak ada data</div><div class="empty-sub">Belum ada data di periode ini</div></div>`:''}
+  ${fuel.length||svcs.length?`<button class="btn btn-s mt12" onclick="exportPDF()" style="display:flex;align-items:center;justify-content:center;gap:8px"><span>📄</span><span>Export PDF</span></button>`:''}`;
+}
+function exportPDF(){
+  const m=gm();if(!m)return;
+  const now=new Date();
+  const inP=d=>{const dt=new Date(d);
+    if(sumP==='week'){const ws=new Date(now);ws.setDate(now.getDate()-now.getDay());return dt>=ws}
+    if(sumP==='month')return dt.getMonth()===now.getMonth()&&dt.getFullYear()===now.getFullYear();
+    if(sumP==='year')return dt.getFullYear()===now.getFullYear();
+    return true};
+  const fuel=S.fuel.filter(f=>inP(f.date));const svcs=S.svcs.filter(s=>inP(s.date));
+  const fc=fuel.reduce((a,f)=>a+(f.amount_paid||0),0);const sc=svcs.reduce((a,s)=>a+(s.cost||0),0);
+  const fl=fuel.reduce((a,f)=>a+(f.liters||0),0);
+  const kmls=fuel.filter(f=>f.km_per_liter&&f.km_per_liter>0&&f.km_per_liter<200).map(f=>f.km_per_liter);
+  const avgKml=kmls.length?(kmls.reduce((a,b)=>a+b,0)/kmls.length).toFixed(1):null;
+  const totKm=fuel.filter(f=>f.km_traveled).reduce((a,f)=>a+(f.km_traveled||0),0);
+  const cpk=totKm&&(fc+sc)?Math.round((fc+sc)/totKm):null;
+  const periodLabel={week:'Minggu Ini',month:'Bulan Ini',year:'Tahun Ini',all:'Semua Waktu'}[sumP];
+  const months=['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+  const tgl=`${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()}`;
+  const svcByCat={};svcs.forEach(s=>{const k=svcLabel(s.type);svcByCat[k]=(svcByCat[k]||0)+(s.cost||0)});
+  const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>RideLog — ${m.name}</title>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:Arial,sans-serif;color:#1c1c1e;font-size:13px;padding:32px;max-width:680px;margin:0 auto}
+    .logo{font-size:22px;font-weight:900;color:#007aff;margin-bottom:4px}
+    .subtitle{font-size:12px;color:#8e8e93;margin-bottom:24px}
+    h2{font-size:15px;font-weight:800;margin:20px 0 10px;border-bottom:2px solid #007aff;padding-bottom:6px;color:#007aff}
+    .grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:16px}
+    .stat{background:#f2f2f7;border-radius:10px;padding:12px}
+    .stat-v{font-size:18px;font-weight:800;color:#1c1c1e}
+    .stat-l{font-size:10px;color:#8e8e93;margin-top:3px;text-transform:uppercase}
+    table{width:100%;border-collapse:collapse;margin-bottom:16px}
+    th{background:#007aff;color:#fff;padding:8px 10px;text-align:left;font-size:11px;font-weight:700}
+    td{padding:7px 10px;border-bottom:1px solid #e5e5ea;font-size:12px}
+    tr:nth-child(even) td{background:#f9f9f9}
+    .footer{margin-top:32px;font-size:10px;color:#8e8e93;border-top:1px solid #e5e5ea;padding-top:12px}
+    @media print{body{padding:16px}}
+  </style></head><body>
+  <div class="logo">🏍️ RideLog</div>
+  <div class="subtitle">Laporan ${periodLabel} · ${m.name}${m.brand?' — '+m.brand:''} · Dicetak ${tgl}</div>
+  <h2>📊 Ringkasan</h2>
+  <div class="grid">
+    <div class="stat"><div class="stat-v">${rp(fc+sc)}</div><div class="stat-l">Total Pengeluaran</div></div>
+    <div class="stat"><div class="stat-v">${rp(fc)}</div><div class="stat-l">Biaya Bensin</div></div>
+    <div class="stat"><div class="stat-v">${rp(sc)}</div><div class="stat-l">Biaya Servis</div></div>
+    <div class="stat"><div class="stat-v">${avgKml||'—'} km/L</div><div class="stat-l">Konsumsi Rata-rata</div></div>
+    <div class="stat"><div class="stat-v">${totKm?km(totKm):'—'}</div><div class="stat-l">Jarak Tempuh</div></div>
+    <div class="stat"><div class="stat-v">${cpk?'Rp '+cpk+'/km':'—'}</div><div class="stat-l">Biaya per km</div></div>
+  </div>
+  ${fuel.length?`<h2>⛽ Isian Bensin (${fuel.length}x)</h2>
+  <table><tr><th>Tanggal</th><th>BBM</th><th>Bayar</th><th>Liter</th><th>km/L</th></tr>
+  ${fuel.map(f=>`<tr><td>${fmtD(f.date)}</td><td>${f.bbm_name||'—'}</td><td>${rp(f.amount_paid)}</td><td>${f.liters?f.liters.toFixed(2)+'L':'—'}</td><td>${f.km_per_liter?f.km_per_liter.toFixed(1):'—'}</td></tr>`).join('')}
+  </table>`:''}
+  ${svcs.length?`<h2>🔧 Servis (${svcs.length}x)</h2>
+  <table><tr><th>Tanggal</th><th>Kategori</th><th>Km</th><th>Biaya</th><th>Catatan</th></tr>
+  ${svcs.map(s=>`<tr><td>${fmtD(s.date)}</td><td>${svcLabel(s.type)}</td><td>${s.odometer?km(s.odometer):'—'}</td><td>${rp(s.cost)}</td><td>${s.note||'—'}</td></tr>`).join('')}
+  </table>`:''}
+  <div class="footer">Dibuat oleh RideLog · ${S.user?.username||''} · ${tgl}</div>
+  <script>window.onload=()=>{window.print();}<\/script>
+  </body></html>`;
+  const w=window.open('','_blank');w.document.write(html);w.document.close();
 }
 
 // ── SETTINGS ─────────────────────────────────────────
@@ -957,6 +1245,11 @@ function rSet(){
 // ── INIT ─────────────────────────────────────────────
 async function init(){
   initTheme();
+  // ensure columns exist (silent)
+  const migrateSQL=async()=>{try{await Promise.all([
+    db('POST','rl_parts?select=limit_km',null).catch(()=>null),
+    db('POST','rl_service?select=next_km',null).catch(()=>null)
+  ])}catch(e){}};
   const sess=localStorage.getItem('rl_sess');
   if(sess){
     try{S.user=JSON.parse(sess);await loadAll();document.getElementById('auth-page').classList.remove('active');document.getElementById('app').style.display='flex';navTo('home')}
