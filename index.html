@@ -1032,7 +1032,8 @@ function openSvcAdd(){
   document.getElementById('sf-del').style.display='none';
   const m=gm();
   document.getElementById('sf-odo-lbl').textContent=m?.odo_mode==='odometer'?'Odometer saat servis (km)':'Km saat servis (opsional)';
-  document.getElementById('sf-nk-lbl').textContent='+ km ke servis berikutnya';
+  document.getElementById('sf-nk-lbl').textContent='+ km interval';
+  document.getElementById('sf-nk-hint').textContent='Isi interval km (cth: 2000) → otomatis dihitung dari odometer servis';
   osh('sh-sf');
 }
 function openSvcEdit(id){
@@ -1043,11 +1044,22 @@ function openSvcEdit(id){
   document.getElementById('sf-odo').value=s.odometer||'';
   document.getElementById('sf-cost').value=s.cost||'';
   document.getElementById('sf-nd').value=s.next_date?.split('T')[0]||'';
-  document.getElementById('sf-nk').value=s.next_km||'';
-  // prevent recalc on edit - mark as absolute
-  document.getElementById('sf-nk').dataset.absolute=s.next_km?'1':'';
+  // Auto-fix: kalau next_km < odometer, itu interval bukan absolute → recalculate
+  const nkVal=s.next_km||'';
+  const odoVal=s.odometer||0;
+  const m2=gm();
+  if(nkVal&&odoVal&&m2?.odo_mode==='odometer'&&nkVal<odoVal){
+    // Tersimpan sebagai interval, tampilkan sebagai absolute
+    document.getElementById('sf-nk').value=odoVal+nkVal;
+    document.getElementById('sf-nk').dataset.absolute='1';
+  }else{
+    document.getElementById('sf-nk').value=nkVal;
+    document.getElementById('sf-nk').dataset.absolute=nkVal?'1':'';
+  }
   document.getElementById('sf-note').value=s.note||'';
   document.querySelectorAll('.svc-cat').forEach(el=>el.classList.toggle('on',el.dataset.cat===s.type));
+  document.getElementById('sf-nk-lbl').textContent='Odometer target berikutnya (km)';
+  document.getElementById('sf-nk-hint').textContent='Angka odometer saat servis berikutnya';
   document.getElementById('sh-sf-t').textContent='Edit Servis';
   document.getElementById('sf-del').style.display='';
   osh('sh-sf');
