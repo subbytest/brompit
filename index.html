@@ -546,7 +546,7 @@ function logout(){
 // ── DATA LOAD ─────────────────────────────────────────
 async function loadAll(){
   const uid=S.user.id;
-  const [motors,bbms]=await Promise.all([dbG(`rl_motors?user_id=eq.${uid}&deleted_at=is.null&order=created_at.asc`),dbG(`rl_bbm?user_id=eq.${uid}&deleted_at=is.null&order=created_at.asc`)]);
+  const [motors,bbms]=await Promise.all([dbG(`rl_motors?user_id=eq.${uid}&deleted_at=is.null`),dbG(`rl_bbm?user_id=eq.${uid}&deleted_at=is.null`)]);
   S.motors=motors;S.bbms=bbms;
   if(motors.length){
     const saved=localStorage.getItem('rl_mid');
@@ -557,7 +557,7 @@ async function loadAll(){
 async function loadMotor(){
   if(!S.mid)return;
   const uid=S.user.id,mid=S.mid;
-  const [fuel,svcs,parts]=await Promise.all([dbG(`rl_fuel?user_id=eq.${uid}&motor_id=eq.${mid}&deleted_at=is.null&order=date.desc`),dbG(`rl_service?user_id=eq.${uid}&motor_id=eq.${mid}&deleted_at=is.null&order=date.desc`),dbG(`rl_parts?user_id=eq.${uid}&motor_id=eq.${mid}&deleted_at=is.null&order=created_at.asc`)]);
+  const [fuel,svcs,parts]=await Promise.all([dbG(`rl_fuel?user_id=eq.${uid}&motor_id=eq.${mid}&deleted_at=is.null&order=date.desc`),dbG(`rl_service?user_id=eq.${uid}&motor_id=eq.${mid}&deleted_at=is.null&order=date.desc`),dbG(`rl_parts?user_id=eq.${uid}&motor_id=eq.${mid}&deleted_at=is.null&order=updated_at.asc`)]);
   S.fuel=fuel;S.svcs=svcs;S.parts=parts;
 }
 
@@ -882,8 +882,9 @@ function fuelCalc(){
   const odoV=parseFloat(document.getElementById('fa-odo').value)||null;
   const m=gm();
   const prev=S.fuel.find(f=>m?.odo_mode==='odometer'?f.odometer!=null:f.km_traveled!=null);
+  const prevOdo=prev?.odometer||(m?.odo_mode==='odometer'?parseFloat(m?.odo_initial)||null:null);
   let kmt=null;
-  if(m?.odo_mode==='odometer'&&odoV&&prev?.odometer)kmt=odoV-prev.odometer;
+  if(m?.odo_mode==='odometer'&&odoV&&prevOdo)kmt=odoV-prevOdo;
   else if(m?.odo_mode==='manual'&&odoV)kmt=odoV;
   const kml=kmt&&liters?kmt/liters:null;
   const cpk=kmt&&amt?amt/kmt:null;
@@ -906,10 +907,11 @@ async function saveFuel(){
   const odoV=parseFloat(document.getElementById('fa-odo').value)||null;
   const m=gm();
   const prev=S.fuel.find(f=>m?.odo_mode==='odometer'?f.odometer!=null:f.km_traveled!=null);
+  const prevOdo=prev?.odometer||(m?.odo_mode==='odometer'?parseFloat(m?.odo_initial)||null:null);
   let kmt=null;
-  if(m?.odo_mode==='odometer'&&odoV&&prev?.odometer){
-    if(odoV<=prev.odometer){toast('Odometer harus lebih besar dari sebelumnya ('+km(prev.odometer)+')','e');return}
-    kmt=odoV-prev.odometer;
+  if(m?.odo_mode==='odometer'&&odoV&&prevOdo){
+    if(odoV<=prevOdo){toast('Odometer harus lebih besar dari sebelumnya ('+km(prevOdo)+')','e');return}
+    kmt=odoV-prevOdo;
   }else if(m?.odo_mode==='manual'&&odoV)kmt=odoV;
   const kml=kmt&&liters?parseFloat((kmt/liters).toFixed(2)):null;
   const cpk=kmt&&amt?parseFloat((amt/kmt).toFixed(2)):null;
@@ -987,6 +989,8 @@ function openSvcEdit(id){
   document.getElementById('sf-cost').value=s.cost||'';
   document.getElementById('sf-nd').value=s.next_date?.split('T')[0]||'';
   document.getElementById('sf-nk').value=s.next_km||'';
+  // prevent recalc on edit - mark as absolute
+  document.getElementById('sf-nk').dataset.absolute=s.next_km?'1':'';
   document.getElementById('sf-note').value=s.note||'';
   document.querySelectorAll('.svc-cat').forEach(el=>el.classList.toggle('on',el.dataset.cat===s.type));
   document.getElementById('sh-sf-t').textContent='Edit Servis';
@@ -1002,9 +1006,10 @@ async function saveSvc(){
   const odoR=parseFloat(document.getElementById('sf-odo').value)||null;
   const nkRaw=parseFloat(document.getElementById('sf-nk').value)||null;
   // if mode odometer & odo filled & nk looks like an interval (< odo), add to odo
+  const nkAbsolute=document.getElementById('sf-nk').dataset.absolute==='1';
   let nextKm=nkRaw;
-  if(nkRaw&&odoR&&m?.odo_mode==='odometer'&&nkRaw<odoR)nextKm=odoR+nkRaw;
-  const data={user_id:S.user.id,motor_id:S.mid,date,type,odometer:odoR,cost:parseFloat(document.getElementById('sf-cost').value)||null,next_date:document.getElementById('sf-nd').value||null,next_km:nextKm,note:document.getElementById('sf-note').value.trim()||null};
+  if(!nkAbsolute&&nkRaw&&odoR&&m?.odo_mode==='odometer'&&nkRaw<odoR)nextKm=odoR+nkRaw;
+  const data={user_id:S.user.id,motor_id:S.mid,date:new Date(date).toISOString(),type,odometer:odoR,cost:parseFloat(document.getElementById('sf-cost').value)||null,next_date:document.getElementById('sf-nd').value?new Date(document.getElementById('sf-nd').value).toISOString():null,next_km:nextKm,note:document.getElementById('sf-note').value.trim()||null};
   try{
     if(id){await dbU(`rl_service?id=eq.${id}`,data);const i=S.svcs.findIndex(s=>s.id===id);S.svcs[i]={...S.svcs[i],...data}}
     else{const[s]=await dbP('rl_service',{...data,id:nuid()});S.svcs.unshift(s)}
@@ -1128,8 +1133,8 @@ function rSum(){
   updChips();const el=document.getElementById('sum-content');
   if(!gm()){el.innerHTML='';return}
   const now=new Date();
-  const inP=d=>{const dt=new Date(d);
-    if(sumP==='week'){const ws=new Date(now);ws.setDate(now.getDate()-now.getDay());return dt>=ws}
+  const inP=d=>{if(!d)return false;const dt=new Date(d);
+    if(sumP==='week'){const ws=new Date(now);ws.setDate(now.getDate()-now.getDay());ws.setHours(0,0,0,0);return dt>=ws}
     if(sumP==='month')return dt.getMonth()===now.getMonth()&&dt.getFullYear()===now.getFullYear();
     if(sumP==='year')return dt.getFullYear()===now.getFullYear();
     return true};
@@ -1170,8 +1175,8 @@ function rSum(){
 function exportPDF(){
   const m=gm();if(!m)return;
   const now=new Date();
-  const inP=d=>{const dt=new Date(d);
-    if(sumP==='week'){const ws=new Date(now);ws.setDate(now.getDate()-now.getDay());return dt>=ws}
+  const inP=d=>{if(!d)return false;const dt=new Date(d);
+    if(sumP==='week'){const ws=new Date(now);ws.setDate(now.getDate()-now.getDay());ws.setHours(0,0,0,0);return dt>=ws}
     if(sumP==='month')return dt.getMonth()===now.getMonth()&&dt.getFullYear()===now.getFullYear();
     if(sumP==='year')return dt.getFullYear()===now.getFullYear();
     return true};
