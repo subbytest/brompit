@@ -449,6 +449,43 @@ const dbU=(p,b)=>db('PATCH',p,b);
 
 // ── STATE ─────────────────────────────────────────────
 let S={user:null,motors:[],mid:null,bbms:[],fuel:[],svcs:[],parts:[],period:'month'};
+// ── NORMALIZE DB VALUES (angka dari DB bisa balik sebagai string) ──
+function normFuel(f){return{...f,amount_paid:Number(f.amount_paid)||0,liters:f.liters!=null?Number(f.liters):null,odometer:f.odometer!=null?Number(f.odometer):null,km_traveled:f.km_traveled!=null?Number(f.km_traveled):null,km_per_liter:f.km_per_liter!=null?Number(f.km_per_liter):null,bbm_price:f.bbm_price!=null?Number(f.bbm_price):null};}
+function normMotor(m){return{...m,odo_initial:m.odo_initial!=null?Number(m.odo_initial):null};}
+function normSvc(s){return{...s,odometer:s.odometer!=null?Number(s.odometer):null,cost:s.cost!=null?Number(s.cost):null,next_km:s.next_km!=null?Number(s.next_km):null};}
+function normPart(p){return{...p,installed_km:p.installed_km!=null?Number(p.installed_km):null,limit_km:p.limit_km!=null?Number(p.limit_km):null};}
+
+// ── NORMALIZE DB VALUES (semua angka dari DB bisa jadi string) ──
+function normFuel(f){
+  return {...f,
+    amount_paid:Number(f.amount_paid)||0,
+    liters:f.liters!=null?Number(f.liters):null,
+    odometer:f.odometer!=null?Number(f.odometer):null,
+    km_traveled:f.km_traveled!=null?Number(f.km_traveled):null,
+    km_per_liter:f.km_per_liter!=null?Number(f.km_per_liter):null,
+    km_per_liter_val:f.km_per_liter!=null?Number(f.km_per_liter):null,
+    bbm_price:f.bbm_price!=null?Number(f.bbm_price):null,
+  };
+}
+function normMotor(m){
+  return {...m,
+    odo_initial:m.odo_initial!=null?Number(m.odo_initial):null,
+  };
+}
+function normSvc(s){
+  return {...s,
+    odometer:s.odometer!=null?Number(s.odometer):null,
+    cost:s.cost!=null?Number(s.cost):null,
+    next_km:s.next_km!=null?Number(s.next_km):null,
+  };
+}
+function normPart(p){
+  return {...p,
+    installed_km:p.installed_km!=null?Number(p.installed_km):null,
+    limit_km:p.limit_km!=null?Number(p.limit_km):null,
+  };
+}
+
 const gm=()=>S.motors.find(m=>m.id===S.mid);
 
 // ── UTILS ─────────────────────────────────────────────
@@ -547,7 +584,7 @@ function logout(){
 async function loadAll(){
   const uid=S.user.id;
   const [motors,bbms]=await Promise.all([dbG(`rl_motors?user_id=eq.${uid}&deleted_at=is.null`),dbG(`rl_bbm?user_id=eq.${uid}&deleted_at=is.null`)]);
-  S.motors=motors;S.bbms=bbms;
+  S.motors=motors.map(normMotor);S.bbms=bbms;
   if(motors.length){
     const saved=localStorage.getItem('rl_mid');
     S.mid=motors.find(m=>m.id===saved)?saved:motors[0].id;
@@ -558,7 +595,7 @@ async function loadMotor(){
   if(!S.mid)return;
   const uid=S.user.id,mid=S.mid;
   const [fuel,svcs,parts]=await Promise.all([dbG(`rl_fuel?user_id=eq.${uid}&motor_id=eq.${mid}&deleted_at=is.null&order=date.desc`),dbG(`rl_service?user_id=eq.${uid}&motor_id=eq.${mid}&deleted_at=is.null&order=date.desc`),dbG(`rl_parts?user_id=eq.${uid}&motor_id=eq.${mid}&deleted_at=is.null&order=updated_at.asc`)]);
-  S.fuel=fuel;S.svcs=svcs;S.parts=parts;
+  S.fuel=fuel.map(normFuel);S.svcs=svcs.map(normSvc);S.parts=parts.map(normPart);
 }
 
 // ── MOTOR SWITCH ─────────────────────────────────────
@@ -739,8 +776,8 @@ async function saveMotor(){
   const id=document.getElementById('mf-id').value;
   const data={name,brand:document.getElementById('mf-brand').value.trim()||null,year:document.getElementById('mf-year').value||null,plate:document.getElementById('mf-plate').value.trim().toUpperCase()||null,odo_mode:document.getElementById('mf-odo').value,odo_initial:document.getElementById('mf-oi').value||null,user_id:S.user.id};
   try{
-    if(id){await dbU(`rl_motors?id=eq.${id}`,data);const i=S.motors.findIndex(m=>m.id===id);S.motors[i]={...S.motors[i],...data}}
-    else{const[m]=await dbP('rl_motors',{...data,id:nuid()});S.motors.push(m);if(!S.mid){S.mid=m.id;localStorage.setItem('rl_mid',m.id);await loadMotor()}}
+    if(id){await dbU(`rl_motors?id=eq.${id}`,data);const i=S.motors.findIndex(m=>m.id===id);S.motors[i]=normMotor({...S.motors[i],...data})}
+    else{const[m]=await dbP('rl_motors',{...data,id:nuid()});S.motors.push(normMotor(m));if(!S.mid){S.mid=m.id;localStorage.setItem('rl_mid',m.id);await loadMotor()}}
     csh('sh-mf');toast(id?'Motor diperbarui':'Motor ditambahkan','ok');rHome();rSet();
   }catch(err){toast('Gagal: '+err.message,'e')}
 }
@@ -916,7 +953,7 @@ async function saveFuel(){
   const kml=kmt&&liters?parseFloat((kmt/liters).toFixed(2)):null;
   const cpk=kmt&&amt?parseFloat((amt/kmt).toFixed(2)):null;
   const data={id:nuid(),user_id:S.user.id,motor_id:S.mid,date:new Date(document.getElementById('fa-date').value).toISOString(),bbm_id:sel.value,bbm_name:opt.text,bbm_price:bbmP,amount_paid:amt,liters,odometer:m?.odo_mode==='odometer'?odoV:null,km_traveled:kmt,km_per_liter:kml,note:document.getElementById('fa-note').value.trim()||null};
-  try{await dbP('rl_fuel',data);S.fuel.unshift(data);csh('sh-fa');toast('Isian bensin disimpan!','ok');rFuel();rHome()}
+  try{await dbP('rl_fuel',data);S.fuel.unshift(normFuel(data));csh('sh-fa');toast('Isian bensin disimpan!','ok');rFuel();rHome()}
   catch(err){toast('Gagal: '+err.message,'e')}
 }
 
@@ -1253,17 +1290,14 @@ function rSet(){
 // ── INIT ─────────────────────────────────────────────
 async function init(){
   initTheme();
-  // ensure columns exist (silent)
-  const migrateSQL=async()=>{try{await Promise.all([
-    db('POST','rl_parts?select=limit_km',null).catch(()=>null),
-    db('POST','rl_service?select=next_km',null).catch(()=>null)
-  ])}catch(e){}};
+  // Warm up Vercel function (prevent cold start delay saat login)
+  fetch(`${API}/api/db/rl_users?select=id&username=eq.__warmup__`).catch(()=>{});
   const sess=localStorage.getItem('rl_sess');
   if(sess){
     try{S.user=JSON.parse(sess);await loadAll();document.getElementById('auth-page').classList.remove('active');document.getElementById('app').style.display='flex';navTo('home')}
     catch{localStorage.removeItem('rl_sess');document.getElementById('auth-page').classList.add('active')}
   }else{document.getElementById('auth-page').classList.add('active')}
-  document.getElementById('au').addEventListener('keydown',e=>{if(e.key==='Enter')authSubmit()});
+  document.getElementById('au').addEventListener('keydown',e=>{if(e.key==='Enter')authSubmit();});
 }
 init();
 </script>
