@@ -449,13 +449,7 @@ const dbU=(p,b)=>db('PATCH',p,b);
 
 // ── STATE ─────────────────────────────────────────────
 let S={user:null,motors:[],mid:null,bbms:[],fuel:[],svcs:[],parts:[],period:'month'};
-// ── NORMALIZE DB VALUES (angka dari DB bisa balik sebagai string) ──
-function normFuel(f){return{...f,amount_paid:Number(f.amount_paid)||0,liters:f.liters!=null?Number(f.liters):null,odometer:f.odometer!=null?Number(f.odometer):null,km_traveled:f.km_traveled!=null?Number(f.km_traveled):null,km_per_liter:f.km_per_liter!=null?Number(f.km_per_liter):null,bbm_price:f.bbm_price!=null?Number(f.bbm_price):null};}
-function normMotor(m){return{...m,odo_initial:m.odo_initial!=null?Number(m.odo_initial):null};}
-function normSvc(s){return{...s,odometer:s.odometer!=null?Number(s.odometer):null,cost:s.cost!=null?Number(s.cost):null,next_km:s.next_km!=null?Number(s.next_km):null};}
-function normPart(p){return{...p,installed_km:p.installed_km!=null?Number(p.installed_km):null,limit_km:p.limit_km!=null?Number(p.limit_km):null};}
-
-// ── NORMALIZE DB VALUES (semua angka dari DB bisa jadi string) ──
+// ── NORMALIZE DB VALUES ──
 function normFuel(f){
   return {...f,
     amount_paid:Number(f.amount_paid)||0,
@@ -463,7 +457,6 @@ function normFuel(f){
     odometer:f.odometer!=null?Number(f.odometer):null,
     km_traveled:f.km_traveled!=null?Number(f.km_traveled):null,
     km_per_liter:f.km_per_liter!=null?Number(f.km_per_liter):null,
-    km_per_liter_val:f.km_per_liter!=null?Number(f.km_per_liter):null,
     bbm_price:f.bbm_price!=null?Number(f.bbm_price):null,
   };
 }
@@ -514,6 +507,21 @@ function toast(msg,type='i'){
   el.style.cssText=`position:fixed;top:max(env(safe-area-inset-top),16px);left:50%;transform:translateX(-50%);background:${bg};color:${col};padding:10px 20px;border-radius:20px;font-size:13px;font-weight:700;z-index:9999;white-space:nowrap;box-shadow:0 4px 16px rgba(0,0,0,.3);transition:.3s;font-family:Manrope,sans-serif`;
   el.textContent=msg;document.body.appendChild(el);
   setTimeout(()=>{el.style.opacity='0';setTimeout(()=>el.remove(),300)},2200);
+}
+function confirmSheet(title,sub,onYes){
+  const m=document.createElement('div');
+  m.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9999;display:flex;align-items:flex-end;justify-content:center;backdrop-filter:blur(4px)';
+  m.innerHTML=`<div style="background:var(--card);border-radius:24px 24px 0 0;width:100%;max-width:430px;padding:24px 18px 40px;text-align:center">
+    <div style="font-size:32px;margin-bottom:10px">🗑️</div>
+    <div style="font-size:17px;font-weight:800;margin-bottom:6px">${title}</div>
+    <div style="font-size:13px;color:var(--muted);margin-bottom:24px;line-height:1.5">${sub}</div>
+    <button id="_cy" style="width:100%;padding:13px;border-radius:12px;border:none;background:var(--red);color:#fff;font-size:15px;font-weight:700;cursor:pointer;margin-bottom:8px">Ya, Hapus</button>
+    <button id="_cn" style="width:100%;padding:13px;border-radius:12px;border:1.5px solid var(--border);background:none;font-size:14px;font-weight:600;cursor:pointer;color:var(--muted)">Batal</button>
+  </div>`;
+  document.body.appendChild(m);
+  m.querySelector('#_cy').onclick=()=>{m.remove();onYes();};
+  m.querySelector('#_cn').onclick=()=>m.remove();
+  m.onclick=(e)=>{if(e.target===m)m.remove();};
 }
 
 // ── THEME ─────────────────────────────────────────────
@@ -594,7 +602,11 @@ async function loadAll(){
 async function loadMotor(){
   if(!S.mid)return;
   const uid=S.user.id,mid=S.mid;
-  const [fuel,svcs,parts]=await Promise.all([dbG(`rl_fuel?user_id=eq.${uid}&motor_id=eq.${mid}&deleted_at=is.null&order=date.desc`),dbG(`rl_service?user_id=eq.${uid}&motor_id=eq.${mid}&deleted_at=is.null&order=date.desc`),dbG(`rl_parts?user_id=eq.${uid}&motor_id=eq.${mid}&deleted_at=is.null&order=updated_at.asc`)]);
+  const [fuel,svcs,parts]=await Promise.all([
+    dbG(`rl_fuel?user_id=eq.${uid}&motor_id=eq.${mid}&deleted_at=is.null&order=date.desc`),
+    dbG(`rl_service?user_id=eq.${uid}&motor_id=eq.${mid}&deleted_at=is.null&order=date.desc`),
+    dbG(`rl_parts?user_id=eq.${uid}&motor_id=eq.${mid}&deleted_at=is.null&order=updated_at.desc`)
+  ]);
   S.fuel=fuel.map(normFuel);S.svcs=svcs.map(normSvc);S.parts=parts.map(normPart);
 }
 
@@ -783,14 +795,15 @@ async function saveMotor(){
 }
 async function delMotor(){
   const id=document.getElementById('mf-id').value;
-  if(!confirm('Hapus motor ini? Semua data akan ikut terhapus.'))return;
-  try{
-    const now=new Date().toISOString();
-    await Promise.all([dbU(`rl_motors?id=eq.${id}`,{deleted_at:now}),dbU(`rl_fuel?motor_id=eq.${id}`,{deleted_at:now}),dbU(`rl_service?motor_id=eq.${id}`,{deleted_at:now}),dbU(`rl_parts?motor_id=eq.${id}`,{deleted_at:now})]);
-    S.motors=S.motors.filter(m=>m.id!==id);
-    if(S.mid===id){S.mid=S.motors[0]?.id||null;if(S.mid){localStorage.setItem('rl_mid',S.mid);await loadMotor()}else{S.fuel=[];S.svcs=[];S.parts=[]}}
-    csh('sh-mf');toast('Motor dihapus','ok');rHome();rSet();
-  }catch(err){toast('Gagal: '+err.message,'e')}
+  confirmSheet('Hapus motor ini?','Semua data bensin, servis & parts akan ikut terhapus.',async()=>{
+    try{
+      const now=new Date().toISOString();
+      await Promise.all([dbU(`rl_motors?id=eq.${id}`,{deleted_at:now}),dbU(`rl_fuel?motor_id=eq.${id}`,{deleted_at:now}),dbU(`rl_service?motor_id=eq.${id}`,{deleted_at:now}),dbU(`rl_parts?motor_id=eq.${id}`,{deleted_at:now})]);
+      S.motors=S.motors.filter(m=>m.id!==id);
+      if(S.mid===id){S.mid=S.motors[0]?.id||null;if(S.mid){localStorage.setItem('rl_mid',S.mid);await loadMotor()}else{S.fuel=[];S.svcs=[];S.parts=[]}}
+      csh('sh-mf');toast('Motor dihapus','ok');rHome();rSet();
+    }catch(err){toast('Gagal: '+err.message,'e')}
+  });
 }
 
 // ── BBM FORM ──────────────────────────────────────────
@@ -819,10 +832,12 @@ async function saveBbm(){
 async function delBbm(){
   const id=document.getElementById('bf-id').value;
   if(S.fuel.some(f=>f.bbm_id===id)){toast('BBM ini masih digunakan di histori','e');return}
-  try{
-    await dbU(`rl_bbm?id=eq.${id}`,{deleted_at:new Date().toISOString()});
-    S.bbms=S.bbms.filter(b=>b.id!==id);csh('sh-bf');toast('BBM dihapus','ok');rSet();
-  }catch(err){toast('Gagal: '+err.message,'e')}
+  confirmSheet('Hapus BBM ini?','Data tidak bisa dikembalikan.',async()=>{
+    try{
+      await dbU(`rl_bbm?id=eq.${id}`,{deleted_at:new Date().toISOString()});
+      S.bbms=S.bbms.filter(b=>b.id!==id);csh('sh-bf');toast('BBM dihapus','ok');rSet();
+    }catch(err){toast('Gagal: '+err.message,'e')}
+  });
 }
 
 // ── FUEL PAGE ─────────────────────────────────────────
@@ -879,11 +894,12 @@ function openFuelDetail(id){
   osh('sh-fd');
 }
 async function delFuel(id){
-  if(!confirm('Hapus data isian ini?'))return;
-  try{
-    await dbU(`rl_fuel?id=eq.${id}`,{deleted_at:new Date().toISOString()});
-    S.fuel=S.fuel.filter(f=>f.id!==id);csh('sh-fd');toast('Data dihapus','ok');rFuel();rHome();
-  }catch(err){toast('Gagal: '+err.message,'e')}
+  confirmSheet('Hapus isian bensin ini?','Data tidak bisa dikembalikan.',async()=>{
+    try{
+      await dbU(`rl_fuel?id=eq.${id}`,{deleted_at:new Date().toISOString()});
+      S.fuel=S.fuel.filter(f=>f.id!==id);csh('sh-fd');toast('Data dihapus','ok');rFuel();rHome();
+    }catch(err){toast('Gagal: '+err.message,'e')}
+  });
 }
 
 // ── FUEL ADD FORM ─────────────────────────────────────
@@ -952,7 +968,7 @@ async function saveFuel(){
   }else if(m?.odo_mode==='manual'&&odoV)kmt=odoV;
   const kml=kmt&&liters?parseFloat((kmt/liters).toFixed(2)):null;
   const cpk=kmt&&amt?parseFloat((amt/kmt).toFixed(2)):null;
-  const data={id:nuid(),user_id:S.user.id,motor_id:S.mid,date:new Date(document.getElementById('fa-date').value).toISOString(),bbm_id:sel.value,bbm_name:opt.text,bbm_price:bbmP,amount_paid:amt,liters,odometer:m?.odo_mode==='odometer'?odoV:null,km_traveled:kmt,km_per_liter:kml,note:document.getElementById('fa-note').value.trim()||null};
+  const data={id:nuid(),user_id:S.user.id,motor_id:S.mid,date:new Date(document.getElementById('fa-date').value).toISOString(),bbm_id:sel.value,bbm_name:opt.text.split(' — ')[0],bbm_price:bbmP,amount_paid:amt,liters,odometer:m?.odo_mode==='odometer'?odoV:null,km_traveled:kmt,km_per_liter:kml,note:document.getElementById('fa-note').value.trim()||null};
   try{await dbP('rl_fuel',data);S.fuel.unshift(normFuel(data));csh('sh-fa');toast('Isian bensin disimpan!','ok');rFuel();rHome()}
   catch(err){toast('Gagal: '+err.message,'e')}
 }
@@ -1055,11 +1071,12 @@ async function saveSvc(){
 }
 async function delSvc(){
   const id=document.getElementById('sf-id').value;
-  if(!confirm('Hapus data servis ini?'))return;
-  try{
-    await dbU(`rl_service?id=eq.${id}`,{deleted_at:new Date().toISOString()});
-    S.svcs=S.svcs.filter(s=>s.id!==id);csh('sh-sf');toast('Servis dihapus','ok');rSvc();rHome();
-  }catch(err){toast('Gagal: '+err.message,'e')}
+  confirmSheet('Hapus data servis ini?','Data tidak bisa dikembalikan.',async()=>{
+    try{
+      await dbU(`rl_service?id=eq.${id}`,{deleted_at:new Date().toISOString()});
+      S.svcs=S.svcs.filter(s=>s.id!==id);csh('sh-sf');toast('Servis dihapus','ok');rSvc();rHome();
+    }catch(err){toast('Gagal: '+err.message,'e')}
+  });
 }
 
 // ── PARTS PAGE ────────────────────────────────────────
@@ -1152,11 +1169,12 @@ async function savePart(){
 }
 async function delPart(){
   const id=document.getElementById('pf-id').value;
-  if(!confirm('Hapus komponen ini?'))return;
-  try{
-    await dbU(`rl_parts?id=eq.${id}`,{deleted_at:new Date().toISOString()});
-    S.parts=S.parts.filter(p=>p.id!==id);csh('sh-pf');toast('Komponen dihapus','ok');rParts();rHome();
-  }catch(err){toast('Gagal: '+err.message,'e')}
+  confirmSheet('Hapus komponen ini?','Data tidak bisa dikembalikan.',async()=>{
+    try{
+      await dbU(`rl_parts?id=eq.${id}`,{deleted_at:new Date().toISOString()});
+      S.parts=S.parts.filter(p=>p.id!==id);csh('sh-pf');toast('Komponen dihapus','ok');rParts();rHome();
+    }catch(err){toast('Gagal: '+err.message,'e')}
+  });
 }
 
 // ── SUMMARY PAGE ──────────────────────────────────────
