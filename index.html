@@ -90,7 +90,6 @@ input[type="date"],input[type="datetime-local"],input[type="number"],input[type=
 .btn-s{background:var(--card2);color:var(--text)}
 .fab{position:fixed;bottom:calc(var(--nav) + 16px + env(safe-area-inset-bottom));right:max(16px, calc(50% - 430px/2 + 16px));width:52px;height:52px;border-radius:50%;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(0,122,255,.4);font-size:24px;z-index:30;transition:.2s;font-family:'Manrope',sans-serif}
 .fab:active{transform:scale(.93)}
-.page:not(.active) .fab{display:none!important}
 /* motor chip */
 .mchip{display:flex;align-items:center;gap:6px;background:var(--card2);border-radius:20px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer;max-width:180px}
 .mchip span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -261,7 +260,6 @@ input[type="date"],input[type="datetime-local"],input[type="number"],input[type=
     <div id="f-chart" style="padding:0 16px"></div>
     <div class="section" style="padding-bottom:8px"><div class="sec-title">Riwayat Isian</div></div>
     <div id="f-list" style="padding:0 16px 16px"></div>
-    <button class="fab" onclick="openFuelAdd()">+</button>
   </div>
 
   <!-- SERVICE -->
@@ -277,7 +275,6 @@ input[type="date"],input[type="datetime-local"],input[type="number"],input[type=
     <div id="s-rem" style="padding:16px 16px 0"></div>
     <div class="section" style="padding-bottom:8px"><div class="sec-title">Riwayat Servis</div></div>
     <div id="s-list" style="padding:0 16px 16px"></div>
-    <button class="fab" onclick="openSvcAdd()">+</button>
   </div>
 
   <!-- SUMMARY -->
@@ -312,7 +309,6 @@ input[type="date"],input[type="datetime-local"],input[type="number"],input[type=
     </div>
     <div id="p-filter" style="display:flex;gap:6px;overflow-x:auto;padding:10px 16px 4px"></div>
     <div id="p-list" style="padding:0 16px 16px"></div>
-    <button class="fab" onclick="openPartAdd()">+</button>
   </div>
 
   <!-- SETTINGS -->
@@ -338,6 +334,9 @@ input[type="date"],input[type="datetime-local"],input[type="number"],input[type=
     <div class="ni" onclick="navTo('summary')" id="ni-summary"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>Ringkasan</div>
   </nav>
 </div>
+
+<!-- FAB -->
+<button id="main-fab" class="fab" style="display:none" onclick="fabAction()">+</button>
 
 <!-- SHEETS -->
 <!-- Motor Switch -->
@@ -554,11 +553,18 @@ function applyTheme(dark){
 function toggleTheme(){applyTheme(document.documentElement.getAttribute('data-theme')!=='dark')}
 
 // ── NAVIGATION ────────────────────────────────────────
+let _fabAction=null;
+function fabAction(){if(_fabAction)_fabAction();}
 function navTo(p){
   document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
   document.querySelectorAll('.ni').forEach(x=>x.classList.remove('on'));
   document.getElementById('pg-'+p).classList.add('active');
   const ni=document.getElementById('ni-'+p);if(ni)ni.classList.add('on');
+  const fab=document.getElementById('main-fab');
+  if(p==='fuel'){_fabAction=openFuelAdd;fab.style.display='flex';}
+  else if(p==='service'){_fabAction=openSvcAdd;fab.style.display='flex';}
+  else if(p==='parts'){_fabAction=openPartAdd;fab.style.display='flex';}
+  else{_fabAction=null;fab.style.display='none';}
   if(p==='home')rHome();
   if(p==='fuel')rFuel();
   if(p==='service')rSvc();
