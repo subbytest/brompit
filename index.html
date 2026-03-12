@@ -74,8 +74,6 @@ select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='ht
 .fr{display:grid;grid-template-columns:1fr 1fr;gap:10px}.fr>*{min-width:0}
 .fr-eq{display:flex;gap:10px}.fr-eq>.fg{flex:1;min-width:0;margin-bottom:14px}
 .fr-eq>.fg input,.fr-eq>.fg select{width:100%;box-sizing:border-box}
-.fr-eq{display:flex;gap:10px}.fr-eq>.fg{flex:1;min-width:0;margin-bottom:14px}
-.fr-eq>.fg input,.fr-eq>.fg select{width:100%;box-sizing:border-box}
 .fhint{font-size:11px;color:var(--muted);margin-top:5px}
 .fg-sep{margin:16px 0 12px;display:flex;align-items:center;gap:10px}
 .fg-sep::before,.fg-sep::after{content:'';flex:1;height:1px;background:var(--border)}
@@ -258,10 +256,11 @@ textarea{box-sizing:border-box}
       </div>
       <div class="hd-row"><button class="hd-btn" id="theme-btn" onclick="toggleTheme()">☀️</button><button class="hd-btn" onclick="navTo('settings')">⚙️</button></div>
     </div>
-    <div style="padding:12px 14px;display:flex;flex-direction:column;gap:10px">
+    <div style="padding:12px 14px 80px;display:flex;flex-direction:column;gap:10px">
       <div id="h-alerts"></div>
-      <div id="h-cards"></div>
-      <div id="h-charts" style="display:flex;flex-direction:column;gap:10px"></div>
+      <div id="h-odo"></div>
+      <div id="h-trend"></div>
+      <div id="h-activity"></div>
     </div>
   </div>
 
@@ -269,7 +268,11 @@ textarea{box-sizing:border-box}
   <div class="page" id="pg-fuel">
     <div class="hd">
       <div class="hd-title">⛽ Bensin</div>
-      <div class="mchip" onclick="openMotorSwitch()"><span id="f-mn">Motor</span><span style="color:var(--muted);font-size:10px">▾</span></div>
+      <div class="hd-row">
+        <div class="mchip" onclick="openMotorSwitch()"><span id="f-mn">Motor</span><span style="color:var(--muted);font-size:10px">▾</span></div>
+        <button class="hd-btn" id="theme-btn-fuel" onclick="toggleTheme()">☀️</button>
+        <button class="hd-btn" onclick="navTo('settings')">⚙️</button>
+      </div>
     </div>
     <div id="f-stats" style="padding:16px 16px 0"></div>
     <div id="f-chart" style="padding:0 16px"></div>
@@ -282,7 +285,11 @@ textarea{box-sizing:border-box}
   <div class="page" id="pg-service">
     <div class="hd">
       <div class="hd-title">🔧 Servis</div>
-      <div class="mchip" onclick="openMotorSwitch()"><span id="s-mn">Motor</span><span style="color:var(--muted);font-size:10px">▾</span></div>
+      <div class="hd-row">
+        <div class="mchip" onclick="openMotorSwitch()"><span id="s-mn">Motor</span><span style="color:var(--muted);font-size:10px">▾</span></div>
+        <button class="hd-btn" id="theme-btn-svc" onclick="toggleTheme()">☀️</button>
+        <button class="hd-btn" onclick="navTo('settings')">⚙️</button>
+      </div>
     </div>
     <div id="s-rem" style="padding:16px 16px 0"></div>
     <div class="section" style="padding-bottom:8px"><div class="sec-title">Riwayat Servis</div></div>
@@ -314,7 +321,11 @@ textarea{box-sizing:border-box}
   <div class="page" id="pg-parts">
     <div class="hd">
       <div class="hd-title">🔩 Parts</div>
-      <div class="mchip" onclick="openMotorSwitch()"><span id="p-mn">Motor</span><span style="color:var(--muted);font-size:10px">▾</span></div>
+      <div class="hd-row">
+        <div class="mchip" onclick="openMotorSwitch()"><span id="p-mn">Motor</span><span style="color:var(--muted);font-size:10px">▾</span></div>
+        <button class="hd-btn" id="theme-btn-parts" onclick="toggleTheme()">☀️</button>
+        <button class="hd-btn" onclick="navTo('settings')">⚙️</button>
+      </div>
     </div>
     <div id="p-filter" style="display:flex;gap:6px;overflow-x:auto;padding:10px 16px 4px"></div>
     <div id="p-list" style="padding:0 16px 16px"></div>
@@ -417,9 +428,9 @@ textarea{box-sizing:border-box}
   <div class="fg"><label class="fl">Biaya (Rp)</label><div class="pfx"><span>Rp</span><input id="sf-cost" type="number" placeholder="55000" inputmode="numeric"></div></div>
   <div class="fg"><label class="fl" id="sf-odo-lbl">Odometer saat servis (km)</label><input id="sf-odo" type="number" inputmode="numeric" placeholder="12450"></div>
   <div class="fg-sep"><div class="fg-sep-lbl">Reminder Berikutnya <span style="font-weight:400;text-transform:none;color:var(--muted)">(opsional)</span></div></div>
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-    <div class="fg" style="margin-bottom:0"><label class="fl">Tanggal</label><input id="sf-nd" type="date" style="width:100%"></div>
-    <div class="fg" style="margin-bottom:0"><label class="fl" id="sf-nk-lbl">Interval / Target km</label><input id="sf-nk" type="number" placeholder="cth: 4000" inputmode="numeric" style="width:100%"></div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:start">
+    <div class="fg" style="margin-bottom:0"><label class="fl">Tanggal</label><input id="sf-nd" type="date" style="width:100%;box-sizing:border-box"></div>
+    <div class="fg" style="margin-bottom:0"><label class="fl" id="sf-nk-lbl">Target km</label><input id="sf-nk" type="number" placeholder="cth: 4000" inputmode="numeric" style="width:100%;box-sizing:border-box"></div>
   </div>
   <div class="fhint" id="sf-nk-hint" style="margin-top:-8px;margin-bottom:14px">Isi interval km (cth: 2000) → otomatis dihitung dari odometer servis</div>
   <div class="fg"><label class="fl">Catatan <span style="color:var(--muted);font-weight:400;text-transform:none">(opsional)</span></label><input id="sf-note" type="text" placeholder="cth: Ganti ban IRC, Bengkel Pak Budi"></div>
@@ -715,11 +726,11 @@ function rHome(){
   if(!m&&S.motors.length===0&&S.user){
     // Cek apakah sedang loading (motors belum dimuat sama sekali)
     // loading — no hero needed
-    ['h-alerts','h-cards','h-charts'].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML=''});return;
+    ['h-alerts','h-odo','h-trend','h-activity'].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML=''});return;
   }
   if(!m){
-    const cardsElX=document.getElementById('h-cards');if(cardsElX)cardsElX.innerHTML=`<div class="card" style="padding:32px;text-align:center"><div style="font-size:40px;margin-bottom:12px">🏍️</div><div style="font-weight:700;margin-bottom:8px">Belum ada motor</div><div style="color:var(--muted);font-size:13px;margin-bottom:16px">Tambah motor untuk mulai mencatat</div><button class="btn btn-p" onclick="openMotorAdd()">+ Tambah Motor</button></div>`;
-    ['h-alerts','h-cards','h-charts'].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML=''});return;
+    const odoElX=document.getElementById('h-odo');if(odoElX)odoElX.innerHTML=`<div class="card" style="padding:32px;text-align:center"><div style="font-size:40px;margin-bottom:12px">🏍️</div><div style="font-weight:700;margin-bottom:8px">Belum ada motor</div><div style="color:var(--muted);font-size:13px;margin-bottom:16px">Tambah motor untuk mulai mencatat</div><button class="btn btn-p" onclick="openMotorAdd()">+ Tambah Motor</button></div>`;
+    ['h-alerts','h-odo','h-trend','h-activity'].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML=''});return;
   }
   const now=new Date();
   const odoNow=curOdo();
@@ -750,77 +761,102 @@ function rHome(){
   }});
   const alertEl=document.getElementById('h-alerts');
   if(alertEl){
-    if(alerts.length){
+    if(alerts.length&&!S.alertDismissed){
       const worst=alerts.some(a=>a.level==='bad');
       const names=alerts.map(a=>a.title).join(' · ');
-      alertEl.innerHTML=`<div style="background:${worst?'linear-gradient(90deg,rgba(255,77,109,.14),rgba(255,77,109,.06))':'linear-gradient(90deg,rgba(255,180,0,.14),rgba(255,180,0,.06))'};border:1px solid ${worst?'rgba(255,77,109,.25)':'rgba(255,180,0,.25)'};border-radius:12px;padding:10px 14px;display:flex;align-items:center;gap:10px;cursor:pointer" onclick="${alerts[0].goto}">
-        <span style="font-size:20px">${worst?'🚨':'⚠️'}</span>
-        <div style="flex:1;min-width:0">
+      alertEl.innerHTML=`<div style="background:${worst?'linear-gradient(90deg,rgba(255,77,109,.14),rgba(255,77,109,.06))':'linear-gradient(90deg,rgba(255,180,0,.14),rgba(255,180,0,.06))'};border:1px solid ${worst?'rgba(255,77,109,.25)':'rgba(255,180,0,.25)'};border-radius:12px;padding:10px 14px;display:flex;align-items:center;gap:10px">
+        <span style="font-size:20px;cursor:pointer" onclick="${alerts[0].goto}">${worst?'🚨':'⚠️'}</span>
+        <div style="flex:1;min-width:0;cursor:pointer" onclick="${alerts[0].goto}">
           <div style="font-size:12px;font-weight:800;color:${worst?'var(--red)':'var(--gold)'}">${alerts.length} komponen perlu perhatian</div>
           <div style="font-size:11px;color:var(--muted);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${names}</div>
         </div>
-        <span style="color:${worst?'var(--red)':'var(--gold)'};font-size:16px">›</span>
+        <button onclick="S.alertDismissed=true;document.getElementById('h-alerts').innerHTML=''" style="width:26px;height:26px;border-radius:50%;background:var(--card2);border:none;cursor:pointer;color:var(--muted);font-size:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0">✕</button>
       </div>`;
     }else{
       alertEl.innerHTML='';
     }
   }
   // chart kml per 6 isian terakhir
-  const kmlData=S.fuel.filter(f=>f.km_per_liter&&f.km_per_liter>0&&f.km_per_liter<200).slice(0,7).reverse();
-  // biaya per bulan 6 bulan terakhir
-  const costByMonth={};
-  S.fuel.forEach(f=>{if(!f.date)return;const d=new Date(f.date);const k=`${d.getFullYear()}-${d.getMonth()}`;if(!costByMonth[k])costByMonth[k]={fuel:0,svc:0,d};costByMonth[k].fuel+=(f.amount_paid||0);costByMonth[k].d=d;});
-  S.svcs.forEach(s=>{if(!s.date)return;const d=new Date(s.date);const k=`${d.getFullYear()}-${d.getMonth()}`;if(!costByMonth[k])costByMonth[k]={fuel:0,svc:0,d};costByMonth[k].svc+=(s.cost||0);});
-  const months=['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
-  const costArr=Object.entries(costByMonth).sort((a,b)=>a[1].d-b[1].d).slice(-6).map(([,v])=>({l:months[v.d.getMonth()],v:v.fuel+v.svc}));
-  const chartsEl=document.getElementById('h-charts');
-  if(chartsEl){
-    let html='';
-    if(kmlData.length>1){
-      const mx=Math.max(...kmlData.map(f=>f.km_per_liter));
-      html+=`<div class="card"><div style="font-size:13px;font-weight:800;margin-bottom:2px">📈 Konsumsi km/L</div><div style="font-size:10px;color:var(--muted);margin-bottom:12px">${kmlData.length} isian terakhir</div><div class="hch-bars">${kmlData.map((f,i)=>{const h=Math.round((f.km_per_liter/mx)*64);const hi=i===kmlData.length-1;return`<div class="hch-bw"><div class="hch-b" style="height:${h}px;background:${hi?'var(--accent)':'var(--al)'}">${hi?`<span class="hch-bv" style="color:var(--accent)">${f.km_per_liter.toFixed(1)}</span>`:''}</div><div class="hch-l">${fmtDS(f.date)}</div></div>`}).join('')}</div></div>`;
-    }
-    if(costArr.length>1){
-      const mx2=Math.max(...costArr.map(c=>c.v));
-      html+=`<div class="card"><div style="font-size:13px;font-weight:800;margin-bottom:2px">💸 Pengeluaran Motor</div><div style="font-size:10px;color:var(--muted);margin-bottom:12px">BBM + Servis per bulan</div><div class="hch-bars">${costArr.map((c,i)=>{const h=Math.round((c.v/mx2)*64);const hi=i===costArr.length-1;return`<div class="hch-bw"><div class="hch-b" style="height:${h}px;background:${hi?'var(--green)':'var(--gl)'}">${hi?`<span class="hch-bv" style="color:var(--green)">${rp(c.v).replace('Rp ','')}</span>`:''}</div><div class="hch-l">${c.l}</div></div>`}).join('')}</div></div>`;
-    }
-    chartsEl.innerHTML=html;
-  }
-  // ── 3-col mini cards ─────────────────────────
+  // charts moved to h-trend (kmlData declared below)
+  // ── Odometer hero card ────────────────────────
   const lf=S.fuel[0];
   const ls=S.svcs[0];
   const moSvcs=S.svcs.filter(s=>{const d=new Date(s.date);return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear();});
   const moSvcCost=moSvcs.reduce((a,s)=>a+(s.cost||0),0);
-  const badParts=S.parts.filter(p=>partStatus(p).level!=='ok');
   const nxtKmAbs=nxtSvc?.next_km&&odoNow!=null&&nxtSvc.next_km>odoNow?nxtSvc.next_km:null;
-  const svcBadge=nxtDays!=null?`<div style="font-size:10px;color:${nxtDays<0?'var(--red)':nxtDays<=7?'var(--gold)':'var(--green)'};font-weight:700;margin-top:5px">${nxtDays<0?'Telat!':nxtDays+' hr lagi'}</div>`:
-    nxtKmAbs!=null?`<div style="font-size:10px;color:var(--green);font-weight:700;margin-top:5px">${km(nxtKmAbs)}</div>`:'';
-  const cardsEl=document.getElementById('h-cards');
-  if(cardsEl)cardsEl.innerHTML=`<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
-    <div style="background:var(--card);border-radius:14px;padding:12px;cursor:pointer;position:relative;overflow:hidden" onclick="navTo('fuel')">
-      <div style="position:absolute;right:-4px;top:-2px;font-size:40px;opacity:.1;pointer-events:none;line-height:1">⛽</div>
-      <div style="font-size:12px;font-weight:800;margin-bottom:4px;position:relative">Bensin</div>
-      ${lf?`<div style="font-size:10px;color:var(--muted);position:relative">${fmtDS(lf.date)}</div>
-      <div style="font-size:12px;font-weight:700;color:var(--green);margin-top:5px;position:relative">${rp(lf.amount_paid)}</div>
-      <div style="font-size:10px;color:var(--muted);position:relative">${lf.liters?lf.liters.toFixed(1)+'L':'—'}</div>`
-      :`<div style="font-size:10px;color:var(--muted);margin-top:4px;position:relative">Belum ada</div>`}
+  const kmls=S.fuel.filter(f=>f.km_per_liter&&f.km_per_liter>0&&f.km_per_liter<200).map(f=>f.km_per_liter);
+  const avgKml=kmls.length?(kmls.reduce((a,b)=>a+b,0)/kmls.length).toFixed(1):null;
+  const moCostFuel=S.fuel.filter(f=>{const d=new Date(f.date);return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear()}).reduce((a,f)=>a+(f.amount_paid||0),0);
+  // Progress bar: dari servis terakhir ke next servis
+  const lastSvcKm=ls?.odometer||null;
+  const progPct=nxtKmAbs&&lastSvcKm&&odoNow!=null?Math.min(99,Math.round(((odoNow-lastSvcKm)/(nxtKmAbs-lastSvcKm))*100)):null;
+  const odoEl=document.getElementById('h-odo');
+  if(odoEl)odoEl.innerHTML=`<div style="background:linear-gradient(135deg,var(--bg2),var(--card));border:1px solid var(--al);border-radius:16px;padding:16px">
+    <div style="font-size:10px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px">Odometer Sekarang</div>
+    <div style="font-size:28px;font-weight:800;letter-spacing:-1px;margin-bottom:${nxtKmAbs||nxtDays?'10px':'0'}">
+      ${odoNow!=null?km(odoNow):'—'} <span style="font-size:13px;color:var(--muted);font-weight:600">km</span>
     </div>
-    <div style="background:var(--card);border-radius:14px;padding:12px;cursor:pointer;position:relative;overflow:hidden" onclick="navTo('service')">
-      <div style="position:absolute;right:-4px;top:-2px;font-size:40px;opacity:.1;pointer-events:none;line-height:1">🔧</div>
-      <div style="font-size:12px;font-weight:800;margin-bottom:4px;position:relative">Servis</div>
-      ${ls?`<div style="font-size:10px;color:var(--muted);position:relative">${moSvcs.length?moSvcs.length+'x bln ini':fmtDS(ls.date)}</div>
-      <div style="font-size:12px;font-weight:700;color:var(--gold);margin-top:5px;position:relative">${moSvcCost?rp(moSvcCost):rp(ls.cost)}</div>
-      ${svcBadge}`
-      :`<div style="font-size:10px;color:var(--muted);margin-top:4px;position:relative">Belum ada</div>`}
+    ${nxtKmAbs?`
+    <div style="height:5px;background:var(--card2);border-radius:3px;overflow:hidden;margin-bottom:5px">
+      <div style="height:100%;width:${progPct||0}%;background:linear-gradient(90deg,var(--green),var(--accent));border-radius:3px;transition:.5s"></div>
     </div>
-    <div style="background:var(--card);border-radius:14px;padding:12px;cursor:pointer;position:relative;overflow:hidden" onclick="navTo('parts')">
-      <div style="position:absolute;right:-4px;top:-2px;font-size:40px;opacity:.1;pointer-events:none;line-height:1">🔩</div>
-      <div style="font-size:12px;font-weight:800;margin-bottom:4px;position:relative">Parts</div>
-      <div style="font-size:10px;color:var(--muted);position:relative">${S.parts.length} komponen</div>
-      ${badParts.length?`<div style="font-size:10px;font-weight:800;margin-top:5px;padding:3px 7px;border-radius:8px;display:inline-block;background:${badParts.some(p=>partStatus(p).level==='bad')?'var(--rl)':'rgba(255,180,0,.15)'};color:${badParts.some(p=>partStatus(p).level==='bad')?'var(--red)':'var(--gold)'};position:relative">${badParts.length} ⚠️</div>`
-      :`<div style="font-size:10px;color:var(--green);font-weight:700;margin-top:5px;position:relative">Semua aman</div>`}
+    <div style="display:flex;justify-content:space-between;margin-bottom:12px">
+      <div style="font-size:9px;color:var(--muted)">Servis terakhir: ${lastSvcKm?km(lastSvcKm):'—'}</div>
+      <div style="font-size:9px;color:var(--green);font-weight:700">Next: ${km(nxtKmAbs)} (sisa ${km(nxtKmAbs-odoNow)})</div>
+    </div>`:''}
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
+      <div style="background:rgba(255,255,255,.06);border-radius:10px;padding:8px 10px;cursor:pointer" onclick="navTo('fuel')">
+        <div style="font-size:13px;font-weight:800;color:var(--green)">${avgKml||'—'}</div>
+        <div style="font-size:9px;color:var(--muted);margin-top:2px;text-transform:uppercase;letter-spacing:.04em">km/liter</div>
+      </div>
+      <div style="background:rgba(255,255,255,.06);border-radius:10px;padding:8px 10px;cursor:pointer" onclick="navTo('fuel')">
+        <div style="font-size:13px;font-weight:800;color:var(--accent)">${moCostFuel?rp(moCostFuel).replace('Rp ','Rp '):'—'}</div>
+        <div style="font-size:9px;color:var(--muted);margin-top:2px;text-transform:uppercase;letter-spacing:.04em">bbm bln ini</div>
+      </div>
+      <div style="background:rgba(255,255,255,.06);border-radius:10px;padding:8px 10px;cursor:pointer" onclick="navTo('service')">
+        <div style="font-size:13px;font-weight:800;color:var(--orange)">${moSvcCost?rp(moSvcCost).replace('Rp ','Rp '):'—'}</div>
+        <div style="font-size:9px;color:var(--muted);margin-top:2px;text-transform:uppercase;letter-spacing:.04em">servis bln ini</div>
+      </div>
     </div>
   </div>`;
+  // ── Tren konsumsi chart ───────────────────────
+  const kmlData=S.fuel.filter(f=>f.km_per_liter&&f.km_per_liter>0&&f.km_per_liter<200).slice(0,8).reverse();
+  const trendEl=document.getElementById('h-trend');
+  if(trendEl){
+    if(kmlData.length>1){
+      const mx=Math.max(...kmlData.map(f=>f.km_per_liter));
+      trendEl.innerHTML=`<div class="card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><div style="font-size:12px;font-weight:800">📈 Tren Konsumsi</div><div style="font-size:11px;color:var(--green);font-weight:700">${kmlData[kmlData.length-1].km_per_liter.toFixed(1)} km/L terakhir</div></div><div class="hch-bars">${kmlData.map((f,i)=>{const h=Math.round((f.km_per_liter/mx)*48);const hi=i===kmlData.length-1;return`<div class="hch-bw"><div class="hch-b" style="height:${h}px;background:${hi?'var(--accent)':'var(--al)'}">${hi?`<span class="hch-bv" style="color:var(--accent)">${f.km_per_liter.toFixed(1)}</span>`:''}</div><div class="hch-l">${fmtDS(f.date)}</div></div>`}).join('')}</div></div>`;
+    }else{
+      trendEl.innerHTML='';
+    }
+  }
+  // ── Aktivitas terakhir (bensin + servis campur) ─
+  const actEl=document.getElementById('h-activity');
+  if(actEl){
+    const fuelActs=S.fuel.slice(0,5).map(f=>({date:new Date(f.date),ico:'⛽',label:'Isi bensin',sub:fmtDS(f.date)+(f.liters?' · '+f.liters.toFixed(1)+'L':''),val:f.km_per_liter?f.km_per_liter.toFixed(1)+' km/L':null,val2:rp(f.amount_paid),color:'var(--green)',goto:"navTo('fuel')"}));
+    const svcActs=S.svcs.slice(0,5).map(s=>({date:new Date(s.date),ico:svcLabel(s.type).split(' ')[0],label:svcLabel(s.type).split(' ').slice(1).join(' ')||svcLabel(s.type),sub:fmtDS(s.date)+(s.odometer?' · '+km(s.odometer):''),val:s.note||null,val2:rp(s.cost),color:'var(--orange)',goto:"navTo('service')"}));
+    const acts=[...fuelActs,...svcActs].sort((a,b)=>b.date-a.date).slice(0,6);
+    if(acts.length){
+      actEl.innerHTML=`<div class="card" style="padding:0;overflow:hidden">
+        <div style="padding:12px 14px 8px;display:flex;justify-content:space-between;align-items:center">
+          <div style="font-size:12px;font-weight:800">🕐 Aktivitas Terakhir</div>
+        </div>
+        ${acts.map(a=>`<div style="display:flex;align-items:center;gap:10px;padding:10px 14px;border-top:1px solid var(--border);cursor:pointer" onclick="${a.goto}">
+          <div style="width:34px;height:34px;border-radius:9px;background:var(--card2);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">${a.ico}</div>
+          <div style="flex:1;min-width:0">
+            <div style="font-size:12px;font-weight:700">${a.label}</div>
+            <div style="font-size:10px;color:var(--muted);margin-top:1px">${a.sub}</div>
+          </div>
+          <div style="text-align:right;flex-shrink:0">
+            ${a.val?`<div style="font-size:10px;color:${a.color};font-weight:700">${a.val}</div>`:''}
+            <div style="font-size:12px;font-weight:700;margin-top:${a.val?'2':'0'}px">${a.val2}</div>
+          </div>
+        </div>`).join('')}
+      </div>`;
+    }else{
+      actEl.innerHTML='';
+    }
+  }
 }
 
 // ── MOTOR FORM ────────────────────────────────────────
