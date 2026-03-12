@@ -72,6 +72,10 @@ select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='ht
 .fg{margin-bottom:14px}
 .fl{font-size:12px;font-weight:700;color:var(--muted);margin-bottom:6px;display:block;text-transform:uppercase;letter-spacing:.04em}
 .fr{display:grid;grid-template-columns:1fr 1fr;gap:10px}.fr>*{min-width:0}
+.fr-eq{display:flex;gap:10px}.fr-eq>.fg{flex:1;min-width:0;margin-bottom:14px}
+.fr-eq>.fg input,.fr-eq>.fg select{width:100%;box-sizing:border-box}
+.fr-eq{display:flex;gap:10px}.fr-eq>.fg{flex:1;min-width:0;margin-bottom:14px}
+.fr-eq>.fg input,.fr-eq>.fg select{width:100%;box-sizing:border-box}
 .fhint{font-size:11px;color:var(--muted);margin-top:5px}
 .fg-sep{margin:16px 0 12px;display:flex;align-items:center;gap:10px}
 .fg-sep::before,.fg-sep::after{content:'';flex:1;height:1px;background:var(--border)}
@@ -409,9 +413,9 @@ textarea{box-sizing:border-box}
   <div class="fg"><label class="fl" id="sf-odo-lbl">Odometer saat servis (km)</label><input id="sf-odo" type="number" inputmode="numeric" placeholder="12450"></div>
   <div class="fg"><label class="fl">Biaya (Rp)</label><div class="pfx"><span>Rp</span><input id="sf-cost" type="number" placeholder="55000" inputmode="numeric"></div></div>
   <div class="fg-sep"><div class="fg-sep-lbl">Reminder Berikutnya <span style="font-weight:400;text-transform:none;color:var(--muted)">(opsional)</span></div></div>
-  <div class="fr">
-    <div class="fg" style="min-width:0"><label class="fl">Tanggal</label><input id="sf-nd" type="date"></div>
-    <div class="fg" style="min-width:0"><label class="fl" id="sf-nk-lbl">+ km interval</label><input id="sf-nk" type="number" placeholder="cth: 2000" inputmode="numeric"></div>
+  <div class="fr-eq">
+    <div class="fg"><label class="fl">Tanggal</label><input id="sf-nd" type="date"></div>
+    <div class="fg"><label class="fl" id="sf-nk-lbl">+ km interval</label><input id="sf-nk" type="number" placeholder="cth: 2000" inputmode="numeric"></div>
   </div>
   <div class="fhint" id="sf-nk-hint" style="margin-top:-8px;margin-bottom:14px">Isi interval km (cth: 2000) → otomatis dihitung dari odometer servis</div>
   <div class="fg"><label class="fl">Catatan <span style="color:var(--muted);font-weight:400;text-transform:none">(opsional)</span></label><input id="sf-note" type="text" placeholder="cth: Ganti ban IRC, Bengkel Pak Budi"></div>
@@ -429,9 +433,9 @@ textarea{box-sizing:border-box}
   <div class="fg"><label class="fl">Kondisi</label><select id="pf-cond"><option value="good">✅ Baik — komponen normal</option><option value="check">⚠️ Perlu Dicek — perlu perhatian</option><option value="replace">🔴 Segera Ganti — kritis</option></select></div>
   <div class="fr"><div class="fg"><label class="fl">Tgl Pasang</label><input id="pf-date" type="date"></div><div class="fg"><label class="fl" id="pf-km-lbl">Km Pasang</label><input id="pf-km" type="number" placeholder="12000" inputmode="numeric"></div></div>
   <div class="fg-sep"><div class="fg-sep-lbl">Reminder Ganti <span style="font-weight:400;text-transform:none;color:var(--muted)">(opsional)</span></div></div>
-  <div class="fr">
-    <div class="fg" style="min-width:0"><label class="fl">Interval ganti (km)</label><input id="pf-lkm" type="number" placeholder="cth: 5000" inputmode="numeric"></div>
-    <div class="fg" style="min-width:0"><label class="fl">Tanggal ganti</label><input id="pf-ldate" type="date"></div>
+  <div class="fr-eq">
+    <div class="fg"><label class="fl">Interval ganti (km)</label><input id="pf-lkm" type="number" placeholder="cth: 5000" inputmode="numeric"></div>
+    <div class="fg"><label class="fl">Tanggal ganti</label><input id="pf-ldate" type="date"></div>
   </div>
   <div class="fhint" style="margin-top:-8px;margin-bottom:14px">Notif muncul kalau salah satu tercapai duluan</div>
   <div class="fg"><label class="fl">Catatan</label><input id="pf-note" type="text" placeholder="cth: IRC NR77"></div>
@@ -669,7 +673,14 @@ function partStatus(p){
 function svcStatus(s){
   const now=new Date();const odo=curOdo();
   let kmDays=null;
-  if(s.next_km&&odo!=null)kmDays=s.next_km-odo;
+  if(s.next_km&&odo!=null){
+    // Sanity check: next_km harus lebih besar dari odo saat servis
+    // Kalau next_km < odometer servis (atau < odo/2), data lama yg salah → abaikan
+    const minSane=s.odometer?s.odometer*0.9:(odo?odo*0.5:0);
+    if(s.next_km>minSane){
+      kmDays=s.next_km-odo;
+    }
+  }
   let dateDays=null;
   if(s.next_date)dateDays=Math.ceil((new Date(s.next_date)-now)/864e5);
   const bad=(kmDays!=null&&kmDays<=0)||(dateDays!=null&&dateDays<=0);
@@ -1077,7 +1088,9 @@ function openSvcEdit(id){
   document.getElementById('sf-cost').value=s.cost||'';
   document.getElementById('sf-nd').value=s.next_date?.split('T')[0]||'';
   // Edit: tampilkan next_km absolute langsung dari DB
-  document.getElementById('sf-nk').value=s.next_km||'';
+  // Sanity: kalau next_km < odometer servis → data lama yg salah, kosongkan
+  const nkSane=s.next_km&&s.odometer&&s.next_km>s.odometer*0.9;
+  document.getElementById('sf-nk').value=nkSane?s.next_km:'';
   document.getElementById('sf-nk').dataset.absolute='1';
   document.getElementById('sf-note').value=s.note||'';
   document.querySelectorAll('.svc-cat').forEach(el=>el.classList.toggle('on',el.dataset.cat===s.type));
