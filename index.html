@@ -80,13 +80,13 @@ select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='ht
 .fg-sep{margin:16px 0 12px;display:flex;align-items:center;gap:10px}
 .fg-sep::before,.fg-sep::after{content:'';flex:1;height:1px;background:var(--border)}
 .fg-sep-lbl{font-size:11px;font-weight:700;color:var(--muted);white-space:nowrap;text-transform:uppercase;letter-spacing:.05em}
-input[type="date"],input[type="datetime-local"],input[type="number"],input[type="text"],select{height:48px;box-sizing:border-box}
+input[type="date"],input[type="datetime-local"],input[type="number"],input[type="text"],select{height:48px;min-height:48px;box-sizing:border-box;-webkit-appearance:none;appearance:none}
 textarea{box-sizing:border-box}
 .fg-sep{margin:16px 0 12px;display:flex;align-items:center;gap:10px}
 .fg-sep::before,.fg-sep::after{content:'';flex:1;height:1px;background:var(--border)}
 .fg-sep-lbl{font-size:11px;font-weight:700;color:var(--muted);white-space:nowrap;text-transform:uppercase;letter-spacing:.05em}
 /* normalize input heights across types */
-input[type="date"],input[type="datetime-local"],input[type="number"],input[type="text"],select{height:48px;box-sizing:border-box}
+input[type="date"],input[type="datetime-local"],input[type="number"],input[type="text"],select{height:48px;min-height:48px;box-sizing:border-box;-webkit-appearance:none;appearance:none}
 textarea{box-sizing:border-box}
 .pfx{position:relative}
 .pfx span{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:13px;font-weight:600;pointer-events:none}
@@ -410,8 +410,8 @@ textarea{box-sizing:border-box}
     </div>
   </div>
 
-  <div class="fg"><label class="fl" id="sf-odo-lbl">Odometer saat servis (km)</label><input id="sf-odo" type="number" inputmode="numeric" placeholder="12450"></div>
   <div class="fg"><label class="fl">Biaya (Rp)</label><div class="pfx"><span>Rp</span><input id="sf-cost" type="number" placeholder="55000" inputmode="numeric"></div></div>
+  <div class="fg"><label class="fl" id="sf-odo-lbl">Odometer saat servis (km)</label><input id="sf-odo" type="number" inputmode="numeric" placeholder="12450"></div>
   <div class="fg-sep"><div class="fg-sep-lbl">Reminder Berikutnya <span style="font-weight:400;text-transform:none;color:var(--muted)">(opsional)</span></div></div>
   <div class="fr-eq">
     <div class="fg"><label class="fl">Tanggal</label><input id="sf-nd" type="date"></div>
@@ -430,7 +430,7 @@ textarea{box-sizing:border-box}
 <div class="ovl" id="sh-pf"><div class="sheet" data-sheet-id='sh-pf'><div class="sh-handle"></div><div class="sh-hd"><div class="sh-title" id="sh-pf-t">Tambah Komponen</div><button class="sh-close" onclick="csh('sh-pf')">✕</button></div><div class="sh-body">
   <input type="hidden" id="pf-id">
   <div class="fg"><label class="fl">Nama Komponen</label><input id="pf-name" type="text" placeholder="cth: Ban Belakang"></div>
-  <div class="fg"><label class="fl">Kondisi</label><select id="pf-cond"><option value="good">✅ Baik — komponen normal</option><option value="check">⚠️ Perlu Dicek — perlu perhatian</option><option value="replace">🔴 Segera Ganti — kritis</option></select></div>
+  <div class="fg"><label class="fl">Kondisi</label><select id="pf-cond"><option value="check">⚠️ Warning</option><option value="replace">🔴 Segera Ganti</option></select></div>
   <div class="fr"><div class="fg"><label class="fl">Tgl Pasang</label><input id="pf-date" type="date"></div><div class="fg"><label class="fl" id="pf-km-lbl">Km Pasang</label><input id="pf-km" type="number" placeholder="12000" inputmode="numeric"></div></div>
   <div class="fg-sep"><div class="fg-sep-lbl">Reminder Ganti <span style="font-weight:400;text-transform:none;color:var(--muted)">(opsional)</span></div></div>
   <div class="fr-eq">
@@ -653,31 +653,37 @@ function curOdo(){
   return(m.odo_initial||0)+total;
 }
 function partStatus(p){
-  const now=new Date();const odo=curOdo();
+  const now=new Date();const odo=curOdo();const m=gm();
+  const isManual=m?.odo_mode==='manual';
   let kmStatus=null,dateStatus=null;
-  if(p.limit_km&&p.installed_km!=null&&odo!=null){
-    const used=odo-p.installed_km;const remaining=p.limit_km-used;const pct=used/p.limit_km;
+  // km tracking hanya valid di mode odometer DAN installed_km terisi DAN curOdo valid
+  if(!isManual&&p.limit_km&&p.installed_km!=null&&odo!=null){
+    const used=odo-p.installed_km;
+    const remaining=p.limit_km-used;
+    const pct=Math.max(0,used)/p.limit_km;
     kmStatus={used,remaining,pct,limit:p.limit_km};
   }
-  if(p.limit_date){const days=Math.ceil((new Date(p.limit_date)-now)/864e5);dateStatus={days,date:p.limit_date}}
+  if(p.limit_date){
+    const days=Math.ceil((new Date(p.limit_date)-now)/864e5);
+    dateStatus={days,date:p.limit_date};
+  }
   let level='ok';
   if(kmStatus&&kmStatus.remaining<=0)level='bad';
   else if(dateStatus&&dateStatus.days<=0)level='bad';
   else if(kmStatus&&(kmStatus.pct>=0.8||kmStatus.remaining<500))level='warn';
   else if(dateStatus&&dateStatus.days<=14)level='warn';
-  // Override dengan kondisi manual kalau lebih buruk
-  if(p.condition==='replace'&&level!=='bad')level='bad';
-  if(p.condition==='check'&&level==='ok')level='warn';
+  // Override dengan kondisi manual — selalu berlaku terlepas dari km/tanggal
+  if(p.condition==='replace')level='bad';
+  else if(p.condition==='check'&&level==='ok')level='warn';
   return{kmStatus,dateStatus,level};
 }
 function svcStatus(s){
   const now=new Date();const odo=curOdo();
   let kmDays=null;
   if(s.next_km&&odo!=null){
-    // Sanity check: next_km harus lebih besar dari odo saat servis
-    // Kalau next_km < odometer servis (atau < odo/2), data lama yg salah → abaikan
-    const minSane=s.odometer?s.odometer*0.9:(odo?odo*0.5:0);
-    if(s.next_km>minSane){
+    // next_km valid hanya kalau lebih besar dari odometer saat ini
+    // kalau lebih kecil = data lama yg salah simpan sebagai interval, abaikan
+    if(s.next_km>odo){
       kmDays=s.next_km-odo;
     }
   }
@@ -746,10 +752,11 @@ function rHome(){
     const sub=[];if(d!=null)sub.push(d<=0?`Telat ${Math.abs(d)} hari`:`${d} hari lagi`);if(kd!=null)sub.push(kd<=0?`Lewat ${Math.abs(Math.round(kd))} km`:`sisa ${Math.round(kd)} km`);
     alerts.push({ico:svcLabel(s.type).split(' ')[0],title:svcLabel(s.type).split(' ').slice(1).join(' ')||svcLabel(s.type),sub:sub.join(' · '),level:st.level,goto:"navTo('service')"});
   }});
-  S.parts.filter(p=>p.limit_km||p.limit_date).forEach(p=>{const st=partStatus(p);if(st.level!=='ok'){
+  S.parts.forEach(p=>{const st=partStatus(p);if(st.level!=='ok'){
     const sub=[];
     if(st.kmStatus)sub.push(st.kmStatus.remaining<=0?`Lewat ${Math.abs(Math.round(st.kmStatus.remaining))} km`:`sisa ${Math.round(st.kmStatus.remaining)} km`);
     if(st.dateStatus)sub.push(st.dateStatus.days<=0?`Telat ${Math.abs(st.dateStatus.days)} hari`:`${st.dateStatus.days} hari lagi`);
+    if(!sub.length)sub.push(p.condition==='replace'?'Perlu segera diganti':'Perlu dicek');
     alerts.push({ico:'🔩',title:p.name,sub:sub.join(' · '),level:st.level,goto:"navTo('parts')"});
   }});
   const alertEl=document.getElementById('h-alerts');
@@ -782,9 +789,11 @@ function rHome(){
     '<div style="color:var(--muted);font-size:13px">Belum ada data bensin</div>'}
   </div>`;
   const ls=S.svcs[0];
+  const moSvcs=S.svcs.filter(s=>{const d=new Date(s.date);return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear();});
+  const moSvcCost=moSvcs.reduce((a,s)=>a+(s.cost||0),0);
   document.getElementById('h-svc').innerHTML=`<div class="card" style="cursor:pointer" onclick="navTo('service')">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px"><div style="font-weight:800;font-size:15px">🔧 Servis</div><span style="color:var(--accent);font-size:12px;font-weight:700">Lihat semua ›</span></div>
-    ${ls?`<div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-size:13px;color:var(--muted)">${svcLabel(ls.type)} · ${fmtDS(ls.date)}</div><div style="font-weight:700;margin-top:2px">${rp(ls.cost)}</div></div>${nxtDays!=null?`<div class="badge ${nxtDays<0?'r':nxtDays<=7?'o':'g'}">${nxtDays<0?'Telat!':nxtDays+'hr lagi'}</div>`:''}</div>`:
+    ${ls?`<div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-size:13px;color:var(--muted)">${moSvcs.length?moSvcs.length+'x servis bulan ini':'Terakhir: '+svcLabel(ls.type)+' · '+fmtDS(ls.date)}</div><div style="font-weight:700;margin-top:2px">${moSvcCost?rp(moSvcCost)+' bulan ini':rp(ls.cost)}</div></div>${nxtDays!=null?`<div class="badge ${nxtDays<0?'r':nxtDays<=7?'o':'g'}">${nxtDays<0?'Telat!':nxtDays+'hr lagi'}</div>`:''}</div>`:
     '<div style="color:var(--muted);font-size:13px">Belum ada data servis</div>'}
   </div>`;
   const badParts=S.parts.filter(p=>partStatus(p).level!=='ok');
@@ -1049,7 +1058,7 @@ function rSvc(){
         </div>
       </div>
       ${hasNext?`<div class="svc-next">
-        <div class="sn"><div class="sn-l">📏 Sisa km</div><div class="sn-v ${nextKmRem!=null?(nextKmRem<=0?'bad':nextKmRem<500?'warn':'ok'):'ok'}">${nextKmRem!=null?(nextKmRem<=0?'Lewat '+Math.abs(Math.round(nextKmRem))+' km':Math.round(nextKmRem)+' km lagi'):'—'}</div></div>
+        <div class="sn"><div class="sn-l">📏 Next km</div><div class="sn-v ${nextKmRem!=null?(nextKmRem<=0?'bad':nextKmRem<500?'warn':'ok'):'ok'}">${nextKmRem!=null?(nextKmRem<=0?'Lewat '+Math.abs(Math.round(nextKmRem))+' km':km(s.next_km)):'—'}</div></div>
         <div class="sn"><div class="sn-l">📅 Next tgl</div><div class="sn-v ${nextDateD!=null?(nextDateD<=0?'bad':nextDateD<=14?'warn':'ok'):'ok'}">${s.next_date?fmtD(s.next_date):'—'}</div></div>
         <div class="sn"><div class="sn-l">⚡ Status</div><div class="sn-v ${st.bad?'bad':st.warn?'warn':'ok'}">${st.bad?'Segera!':st.warn?'Hampir':'Aman'}</div></div>
       </div>`:''}
@@ -1071,10 +1080,11 @@ function openSvcAdd(){
   const m=gm();
   document.getElementById('sf-odo-lbl').textContent=m?.odo_mode==='odometer'?'Odometer saat servis (km)':'Km saat servis (opsional)';
   const isManual=m?.odo_mode==='manual';
+  document.getElementById('sf-odo-lbl').textContent=isManual?'Total km saat servis (opsional)':'Odometer saat servis (km)';
   document.getElementById('sf-nk-lbl').textContent='+ km interval';
   document.getElementById('sf-nk-hint').textContent=isManual
-    ?'Isi interval km (cth: 2000) → dihitung dari km saat ini'
-    :'Isi interval km (cth: 2000) → dihitung dari odometer servis';
+    ?'Isi interval km (cth: 2000) → dihitung dari total km saat ini'
+    :'Isi interval km (cth: 2000) → dihitung dari odometer saat servis';
   document.getElementById('sf-nk').placeholder='cth: 2000';
   document.getElementById('sf-nk').dataset.absolute='';
   osh('sh-sf');
@@ -1088,8 +1098,9 @@ function openSvcEdit(id){
   document.getElementById('sf-cost').value=s.cost||'';
   document.getElementById('sf-nd').value=s.next_date?.split('T')[0]||'';
   // Edit: tampilkan next_km absolute langsung dari DB
-  // Sanity: kalau next_km < odometer servis → data lama yg salah, kosongkan
-  const nkSane=s.next_km&&s.odometer&&s.next_km>s.odometer*0.9;
+  // Sanity: kalau next_km <= odometer servis → data lama (interval), kosongkan
+  const curO=curOdo();
+  const nkSane=s.next_km&&curO!=null&&s.next_km>curO;
   document.getElementById('sf-nk').value=nkSane?s.next_km:'';
   document.getElementById('sf-nk').dataset.absolute='1';
   document.getElementById('sf-note').value=s.note||'';
@@ -1116,8 +1127,9 @@ async function saveSvc(){
     if(m?.odo_mode==='odometer'&&odoR){
       nextKm=odoR+nkRaw;
     }else if(m?.odo_mode==='manual'){
-      const co=curOdo();
-      nextKm=co!=null?co+nkRaw:nkRaw;
+      // manual: gunakan odoR kalau diisi, fallback ke curOdo()
+      const base=odoR!=null?odoR:curOdo();
+      nextKm=base!=null?base+nkRaw:null;
     }
   }
   const data={user_id:S.user.id,motor_id:S.mid,date:new Date(date).toISOString(),type,odometer:odoR,cost:parseFloat(document.getElementById('sf-cost').value)||null,next_date:document.getElementById('sf-nd').value?new Date(document.getElementById('sf-nd').value).toISOString():null,next_km:nextKm,note:document.getElementById('sf-note').value.trim()||null};
@@ -1144,21 +1156,20 @@ function rParts(){
   const fl=document.getElementById('p-filter'),li=document.getElementById('p-list');
   if(!gm()){fl.innerHTML='';li.innerHTML='';return}
   const odo=curOdo();
-  const filters=[['all','Semua'],['bad','🔴 Segera Ganti'],['warn','⚠️ Perlu Cek'],['ok','✅ Baik']];
+  const filters=[['all','Semua'],['bad','🔴 Segera Ganti'],['warn','⚠️ Warning']];
   fl.innerHTML=filters.map(([k,l])=>`<div class="svc-chip ${partFilter===k?'on':''}" onclick="setPartFilter('${k}')">${l}</div>`).join('');
   if(!S.parts.length){li.innerHTML=`<div class="empty"><div class="empty-ico">🔩</div><div class="empty-title">Belum ada komponen</div><div class="empty-sub">Tap ＋ untuk tambah komponen</div></div>`;return}
   const show=S.parts.filter(p=>{
     const st=partStatus(p);
     if(partFilter==='bad')return st.level==='bad';
     if(partFilter==='warn')return st.level==='warn';
-    if(partFilter==='ok')return st.level==='ok';
     return true;
   });
   if(!show.length){li.innerHTML=`<div class="empty"><div class="empty-ico">🔍</div><div class="empty-title">Tidak ada komponen</div><div class="empty-sub">Tidak ada komponen di filter ini</div></div>`;return}
   li.innerHTML=show.map(p=>{
     const st=partStatus(p);
     const condCol=st.level==='bad'?'r':st.level==='warn'?'o':'g';
-    const condLabel=st.level==='bad'?'🔴 Kritis':st.level==='warn'?'⚠️ Perlu Cek':'✅ Baik';
+    const condLabel=st.level==='bad'?'🔴 Kritis':st.level==='warn'?'⚠️ Warning':'✅ Baik';
     let progHtml='',remHtml='';
     if(st.kmStatus){
       const pct=Math.min(st.kmStatus.pct,1);
@@ -1179,11 +1190,11 @@ function rParts(){
           <div style="display:flex;align-items:center;gap:6px">
             <div style="font-size:13px;font-weight:800">${p.name}</div>
           </div>
-          <div style="font-size:10px;color:var(--muted);margin-top:2px">${p.installed_date?'Dipasang '+fmtD(p.installed_date):'—'}${p.installed_km?' · km '+p.installed_km.toLocaleString('id'):''}${p.note?' · '+p.note:''}</div>
+          <div style="font-size:10px;color:var(--muted);margin-top:2px">${p.installed_date?'Dipasang '+fmtD(p.installed_date):'—'}${p.installed_km&&gm()?.odo_mode==='odometer'?' · km '+p.installed_km.toLocaleString('id'):''}${p.note?' · '+p.note:''}</div>
         </div>
         <div class="part-status">
           <div class="badge ${condCol}">${condLabel}</div>
-          ${odo&&p.installed_km?`<div class="li-vsub" style="margin-top:4px">${(odo-p.installed_km).toLocaleString('id')} km</div>`:''}
+          ${odo&&p.installed_km&&gm()?.odo_mode==='odometer'?`<div class="li-vsub" style="margin-top:4px">${(odo-p.installed_km).toLocaleString('id')} km terpakai</div>`:''}
         </div>
       </div>
       ${progHtml}${remHtml}
@@ -1192,10 +1203,22 @@ function rParts(){
 }
 function setPartFilter(f){partFilter=f;rParts()}
 function openPartsList(){navTo('parts')}
+function _updatePartFormMode(){
+  const isManual=gm()?.odo_mode==='manual';
+  // km install field: hide di manual mode
+  const kmWrap=document.getElementById('pf-km-wrap');
+  if(kmWrap)kmWrap.style.display=isManual?'none':'';
+  // limit km field: hide di manual mode
+  const lkmWrap=document.getElementById('pf-lkm-wrap');
+  if(lkmWrap)lkmWrap.style.display=isManual?'none':'';
+  // label km pasang
+  const lbl=document.getElementById('pf-km-lbl');
+  if(lbl)lbl.textContent='Km pasang (odometer)';
+}
 function openPartAdd(){
   if(!S.mid){toast('Pilih motor dulu','e');return}
   ['pf-id','pf-name','pf-km','pf-note','pf-lkm','pf-ldate'].forEach(id=>document.getElementById(id).value='');
-  document.getElementById('pf-date').value=todayD();document.getElementById('pf-cond').value='good';
+  document.getElementById('pf-date').value=todayD();document.getElementById('pf-cond').value='check';
   document.getElementById('pf-photo-prev').classList.remove('show');document.getElementById('pf-photo-prev').src='';document.getElementById('pf-photo-in').value='';
   document.getElementById('sh-pf-t').textContent='Tambah Komponen';document.getElementById('pf-del').style.display='none';
   document.getElementById('pf-km-lbl').textContent=gm()?.odo_mode==='odometer'?'Km pasang (odometer)':'Km tempuh saat pasang';
@@ -1203,13 +1226,16 @@ function openPartAdd(){
 }
 function openPartEdit(id){
   const p=S.parts.find(x=>x.id===id);if(!p)return;
-  document.getElementById('pf-id').value=p.id;document.getElementById('pf-name').value=p.name;document.getElementById('pf-cond').value=p.condition;
+  document.getElementById('pf-id').value=p.id;document.getElementById('pf-name').value=p.name;
+  document.getElementById('pf-cond').value=p.condition==='good'?'check':p.condition;
   document.getElementById('pf-date').value=p.installed_date||'';document.getElementById('pf-km').value=p.installed_km||'';document.getElementById('pf-note').value=p.note||'';
   document.getElementById('pf-lkm').value=p.limit_km||'';document.getElementById('pf-ldate').value=p.limit_date||'';
   if(p.photo){document.getElementById('pf-photo-prev').src=p.photo;document.getElementById('pf-photo-prev').classList.add('show')}
   else{document.getElementById('pf-photo-prev').classList.remove('show');document.getElementById('pf-photo-prev').src=''}
   document.getElementById('pf-photo-in').value='';
-  document.getElementById('sh-pf-t').textContent='Edit Komponen';document.getElementById('pf-del').style.display='';osh('sh-pf');
+  document.getElementById('sh-pf-t').textContent='Edit Komponen';document.getElementById('pf-del').style.display='';
+  _updatePartFormMode();
+  osh('sh-pf');
 }
 function partPhoto(input){
   const f=input.files[0];if(!f)return;
