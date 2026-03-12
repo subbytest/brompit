@@ -1156,11 +1156,11 @@ function openSvcAdd(){
   document.getElementById('sf-odo-lbl').textContent=m?.odo_mode==='odometer'?'Odometer saat servis (km)':'Km saat servis';
   const isManual=m?.odo_mode==='manual';
   document.getElementById('sf-odo-lbl').textContent=isManual?'Total km saat servis':'Odometer saat servis (km)';
-  document.getElementById('sf-nk-lbl').textContent='km interval';
+  document.getElementById('sf-nk-lbl').textContent='interval servis';
   document.getElementById('sf-nk-hint').textContent=isManual
     ?'Isi interval km (cth: 2000) → dihitung dari total km saat ini'
-    :'Isi interval km (cth: 2000) → dihitung dari odometer saat servis';
-  document.getElementById('sf-nk').placeholder='cth: 2000';
+    :'';
+  document.getElementById('sf-nk').placeholder='2000';
   document.getElementById('sf-nk').dataset.absolute='';
   osh('sh-sf');
 }
@@ -1182,8 +1182,8 @@ function openSvcEdit(id){
   document.getElementById('sf-nk').dataset.absolute='1';
   document.getElementById('sf-note').value=s.note||'';
   document.querySelectorAll('.svc-cat').forEach(el=>el.classList.toggle('on',el.dataset.cat===s.type));
-  document.getElementById('sf-nk-lbl').textContent='Interval atau odometer target (km)';
-  document.getElementById('sf-nk-hint').textContent='Isi interval (cth: 4000) atau odometer absolut (cth: 55821) — otomatis terdeteksi';
+  document.getElementById('sf-nk-lbl').textContent='Interval servis';
+  document.getElementById('sf-nk-hint').textContent='';
   const placeholderNk=s.next_km&&s.next_km>curOdo()?String(Math.round(s.next_km)):'cth: 4000 atau 55821';
   document.getElementById('sf-nk').placeholder=placeholderNk;
   document.getElementById('sh-sf-t').textContent='Edit Servis';
