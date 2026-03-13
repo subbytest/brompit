@@ -417,7 +417,7 @@ input[type="date"],input[type="datetime-local"],input[type="number"],input[type=
     <div class="fg" style="margin-bottom:0"><label class="fl">Tanggal servis</label><input id="sf-nd" type="date" style="width:100%;box-sizing:border-box"></div>
     <div class="fg" style="margin-bottom:0"><label class="fl" id="sf-nk-lbl">Interval servis</label><input id="sf-nk" type="number" placeholder="cth: 4000" inputmode="numeric" style="width:100%;box-sizing:border-box"></div>
   </div>
-  <div class="fhint" id="sf-nk-hint" style="margin-top:-8px;margin-bottom:14px"></div>
+  <div class="fhint" id="sf-nk-hint" style="margin-top:-8px;margin-bottom:14px">*Notif muncul kalau salah satu sudah tercapai</div>
   <div class="fg"><label class="fl">Catatan <span style="color:var(--muted);font-weight:400;text-transform:none"></span></label><input id="sf-note" type="text" placeholder="Ganti ban IRC - io.garage"></div>
   <div id="sf-del" style="display:none"><div class="dvd mt12"></div><button class="btn btn-d mt12" onclick="delSvc()">Hapus Servis</button></div>
   <button class="btn btn-p mt16" onclick="saveSvc()">Simpan</button>
@@ -437,7 +437,7 @@ input[type="date"],input[type="datetime-local"],input[type="number"],input[type=
     <div class="fg" id="pf-lkm-wrap"><label class="fl">Interval ganti</label><input id="pf-lkm" type="number" placeholder="(opsional)" inputmode="numeric"></div>
     <div class="fg"><label class="fl">Tanggal ganti</label><input id="pf-ldate" type="date"></div>
   </div>
-  <div class="fhint" style="margin-top:-8px;margin-bottom:14px">Notif muncul kalau salah satu tercapai duluan</div>
+  <div class="fhint" style="margin-top:-8px;margin-bottom:14px">*Notif muncul kalau salah satu sudah tercapai</div>
   <div class="fg"><label class="fl">Catatan</label><input id="pf-note" type="text" placeholder="Quattrini 172"></div>
   <div class="fg"><label class="fl">Foto <span style="color:var(--muted);font-weight:400;text-transform:none"></span></label>
     <div class="ph-up" onclick="document.getElementById('pf-photo-in').click()"><span>📷</span><span>Tap untuk pilih foto</span></div>
@@ -1283,7 +1283,7 @@ function _updatePartFormMode(){
   if(lkmWrap)lkmWrap.style.display=isManual?'none':'';
   // label km pasang
   const lbl=document.getElementById('pf-km-lbl');
-  if(lbl)lbl.textContent='Km pasang';
+  if(lbl)lbl.textContent='Km Cek';
 }
 function openPartAdd(){
   if(!S.mid){toast('Pilih motor dulu','e');return}
