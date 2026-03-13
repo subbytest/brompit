@@ -261,7 +261,7 @@ input[type="date"],input[type="datetime-local"],input[type="number"],input[type=
     </div>
     <div id="f-stats" style="padding:16px 16px 0"></div>
     <div id="f-chart" style="padding:0 16px"></div>
-    <div class="section" style="padding-bottom:8px"><div class="sec-title">Riwayat Isian</div></div>
+    <div class="section" style="padding-bottom:8px"><div class="sec-title">Riwayat Isi Bensin</div></div>
     <div id="f-list" style="padding:0 16px 16px"></div>
     <button class="fab" onclick="openFuelAdd()">+</button>
   </div>
@@ -412,7 +412,7 @@ input[type="date"],input[type="datetime-local"],input[type="number"],input[type=
 
   <div class="fg"><label class="fl">Total biaya</label><div class="pfx"><span>Rp</span><input id="sf-cost" type="number" placeholder="55000" inputmode="numeric"></div></div>
   <div class="fg"><label class="fl" id="sf-odo-lbl">Odometer saat servis</label><input id="sf-odo" type="number" inputmode="numeric" placeholder="(opsional)"></div>
-  <div class="fg-sep"><div class="fg-sep-lbl">Reminder Berikutnya</div></div>
+  <div class="fg-sep"><div class="fg-sep-lbl">Next Reminder</div></div>
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:start">
     <div class="fg" style="margin-bottom:0"><label class="fl">Tanggal servis</label><input id="sf-nd" type="date" style="width:100%;box-sizing:border-box"></div>
     <div class="fg" style="margin-bottom:0"><label class="fl" id="sf-nk-lbl">Interval servis</label><input id="sf-nk" type="number" placeholder="cth: 4000" inputmode="numeric" style="width:100%;box-sizing:border-box"></div>
@@ -431,8 +431,8 @@ input[type="date"],input[type="datetime-local"],input[type="number"],input[type=
   <input type="hidden" id="pf-id">
   <div class="fg"><label class="fl">Nama Parts</label><input id="pf-name" type="text" placeholder="Velg"></div>
   <div class="fg"><label class="fl">Kondisi</label><select id="pf-cond"><option value="good">✅ Baik</option><option value="check">⚠️ Warning</option><option value="replace">🔴 Segera Ganti</option></select></div>
-  <div class="fr"><div class="fg"><label class="fl">Tanggal Pasang</label><input id="pf-date" type="date"></div><div class="fg" id="pf-km-wrap"><label class="fl" id="pf-km-lbl">Km Pasang</label><input id="pf-km" type="number" placeholder="12000" inputmode="numeric"></div></div>
-  <div class="fg-sep"><div class="fg-sep-lbl">Reminder Ganti</div></div>
+  <div class="fr"><div class="fg"><label class="fl">Tanggal Cek</label><input id="pf-date" type="date"></div><div class="fg" id="pf-km-wrap"><label class="fl" id="pf-km-lbl">Km Cek</label><input id="pf-km" type="number" placeholder="12000" inputmode="numeric"></div></div>
+  <div class="fg-sep"><div class="fg-sep-lbl">Next Reminder</div></div>
   <div class="fr-eq">
     <div class="fg" id="pf-lkm-wrap"><label class="fl">Interval ganti</label><input id="pf-lkm" type="number" placeholder="(opsional)" inputmode="numeric"></div>
     <div class="fg"><label class="fl">Tanggal ganti</label><input id="pf-ldate" type="date"></div>
@@ -1021,7 +1021,7 @@ function openFuelAdd(){
   const lastOdo=S.fuel.find(f=>f.odometer)?.odometer;
   const manualTip=document.getElementById('fa-manual-tip');
   if(m.odo_mode==='odometer'){
-    document.getElementById('fa-odo-lbl').textContent='Odometer saat ini (km)';
+    document.getElementById('fa-odo-lbl').textContent='Odometer saat isi (km)';
     const prevHint=lastOdo?`: ${km(lastOdo)}`:'Lihat angka di speedometer motormu';
     document.getElementById('fa-odo-hint').textContent=prevHint;
     document.getElementById('fa-odo').placeholder=lastOdo?String(lastOdo):'12450';
