@@ -588,7 +588,7 @@ async function doLogin(usr){
   S.user={id:usr.id,username:usr.username};
   localStorage.setItem('rl_sess',JSON.stringify(S.user));
   // Tampil app dulu, load data di background
-  document.getElementById('auth-page').classList.remove('active');
+  const ap=document.getElementById('auth-page');ap.classList.remove('active');ap.style.display='none';
   document.getElementById('app').style.display='flex';
   navTo('home');
   await loadAll();
@@ -598,7 +598,7 @@ function logout(){
   localStorage.removeItem('rl_sess');
   S={user:null,motors:[],mid:null,bbms:[],fuel:[],svcs:[],parts:[],period:'month'};
   document.getElementById('app').style.display='none';
-  document.getElementById('auth-page').classList.add('active');
+  const ap3=document.getElementById('auth-page');ap3.classList.add('active');ap3.style.display='flex';
   document.getElementById('au').value='';
   const btn=document.getElementById('as-btn');btn.style.opacity='';btn.disabled=false;
 }
@@ -1484,14 +1484,14 @@ async function init(){
   if(sess){
     try{
       S.user=JSON.parse(sess);
-      document.getElementById('auth-page').classList.remove('active');
+      const ap2=document.getElementById('auth-page');ap2.classList.remove('active');ap2.style.display='none';
       document.getElementById('app').style.display='flex';
       navTo('home');
       await loadAll();
       navTo('home');
     }
-    catch{localStorage.removeItem('rl_sess');document.getElementById('auth-page').classList.add('active')}
-  }else{document.getElementById('auth-page').classList.add('active')}
+    catch{localStorage.removeItem('rl_sess');const ap5=document.getElementById('auth-page');ap5.classList.add('active');ap5.style.display='flex';}
+  }else{const ap4=document.getElementById('auth-page');ap4.classList.add('active');ap4.style.display='flex';}
   document.getElementById('au').addEventListener('keydown',e=>{if(e.key==='Enter')authSubmit();});
 }
 init();
