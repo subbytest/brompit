@@ -777,7 +777,7 @@ function rHome(){
   const progPct=nxtKmAbs&&lastSvcKm&&odoNow!=null?Math.min(99,Math.round(((odoNow-lastSvcKm)/(nxtKmAbs-lastSvcKm))*100)):null;
   const odoEl=document.getElementById('h-odo');
   if(odoEl)odoEl.innerHTML=`<div style="background:linear-gradient(135deg,var(--bg2),var(--card));border:1px solid var(--al);border-radius:16px;padding:16px">
-    <div style="font-size:10px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px">Odometer Sekarang</div>
+    <div style="font-size:10px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px">Odometer Isi Bensin terakhir</div>
     <div style="font-size:28px;font-weight:800;letter-spacing:-1px;margin-bottom:${nxtKmAbs||nxtDays?'10px':'0'}">
       ${odoNow!=null?km(odoNow):'—'} <span style="font-size:13px;color:var(--muted);font-weight:600">km</span>
     </div>
