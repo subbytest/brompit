@@ -91,7 +91,7 @@ input[type="date"],input[type="datetime-local"],input[type="number"],input[type=
 .btn-d{background:var(--rl);color:var(--red)}
 .btn-s{background:var(--card2);color:var(--text)}
 /* fab */
-.fab{position:fixed;bottom:calc(var(--nav) + 16px + env(safe-area-inset-bottom));right:max(16px, calc(50vw - 215px + 16px));width:52px;height:52px;border-radius:50%;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(0,122,255,.4);font-size:24px;z-index:200;transition:.2s;font-family:'Manrope',sans-serif}
+.fab{position:fixed;bottom:calc(var(--nav) + 16px + env(safe-area-inset-bottom));right:max(16px, calc((100vw - 430px) / 2 + 16px));width:52px;height:52px;border-radius:50%;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(0,122,255,.4);z-index:50;transition:.2s;cursor:pointer;border:none;-webkit-tap-highlight-color:rgba(0,0,0,0)}
 .fab:active{transform:scale(.93)}
 /* motor chip */
 .mchip{display:flex;align-items:center;gap:6px;background:var(--card2);border-radius:20px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer;max-width:180px}
@@ -307,7 +307,7 @@ input[type="date"],input[type="datetime-local"],input[type="number"],input[type=
       </div>
     </div>
     <div id="p-filter" style="display:flex;gap:6px;overflow-x:auto;padding:10px 16px 4px"></div>
-    <div id="p-list" style="padding:0 16px 16px"></div>
+    <div id="p-list" style="padding:0 16px 100px"></div>
   </div>
 
   <!-- SETTINGS -->
@@ -326,11 +326,11 @@ input[type="date"],input[type="datetime-local"],input[type="number"],input[type=
 
   <!-- NAV -->
   <nav id="bnav">
-    <div class="ni on" onclick="navTo('home')" id="ni-home"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2.25 12 11.204 3.045c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"/></svg>Beranda</div>
-    <div class="ni" onclick="navTo('fuel')" id="ni-fuel"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3h7v7H3z"/><path d="M14 3h7v7h-7z"/><path d="M14 14h7v7h-7z"/><path d="M3 14h7v7H3z"/></svg>Bensin</div>
-    <div class="ni" onclick="navTo('service')" id="ni-service"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11.42 15.17 17.25 21A2.652 2.652 0 0 0 21 17.25l-5.877-5.877M11.42 15.17l2.496-3.03c.317-.384.74-.626 1.208-.766M11.42 15.17l-4.655 5.653a2.548 2.548 0 1 1-3.586-3.586l6.837-5.63m5.108-.233c.55-.164 1.163-.188 1.743-.14a4.5 4.5 0 0 0 4.486-6.336l-3.276 3.277a3.004 3.004 0 0 1-2.25-2.25l3.276-3.276a4.5 4.5 0 0 0-6.336 4.486c.091 1.076-.071 2.264-.904 2.95l-.102.085m-1.745 1.437L5.909 7.5H4.5L2.25 3.75l1.5-1.5L7.5 4.5v1.409l4.26 4.26m-1.745 1.437 1.745-1.437m6.615 8.206L15.75 15.75M4.867 19.125h.008v.008h-.008v-.008Z"/></svg>Servis</div>
-    <div class="ni" onclick="navTo('parts')" id="ni-parts"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6.429 9.75 2.25 12l4.179 2.25m0-4.5 5.571 3 5.571-3m-11.142 0L2.25 7.5l10.5-6 10.5 6-4.179 2.25m0 0L21.75 12l-4.179 2.25m0 0 4.179 2.25L12 21.75 2.25 16.5l4.179-2.25m11.142 0-5.571 3-5.571-3"/></svg>Parts</div>
-    <div class="ni" onclick="navTo('summary')" id="ni-summary"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75ZM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V8.625ZM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V4.125Z"/></svg>Ringkasan</div>
+    <div class="ni on" onclick="navTo('home')" id="ni-home"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M9.944 3.292C10.877 2.43 12 2 12 2s1.123.43 2.056 1.292l6.5 5.927C21.5 10.1 22 11.05 22 12.1V19a3 3 0 0 1-3 3h-3.5v-5.5a1.5 1.5 0 0 0-3 0V22H9a3 3 0 0 1-3-3v-6.9c0-1.05.5-2 1.444-2.881l6.5-5.927Z" fill="currentColor" opacity=".2"/><path d="M2 12.1c0-1.05.5-2 1.444-2.881l6.5-5.927C10.877 2.43 12 2 12 2s1.123.43 2.056 1.292l6.5 5.927C21.5 10.1 22 11.05 22 12.1V19a3 3 0 0 1-3 3h-3.5v-5.5a1.5 1.5 0 0 0-3 0V22H5a3 3 0 0 1-3-3v-6.9Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>Beranda</div>
+    <div class="ni" onclick="navTo('fuel')" id="ni-fuel"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 21V7a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><rect x="3" y="20" width="14" height="1.5" rx=".75" fill="currentColor"/><path d="M8 11h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M16 7.5l3.5-1.5a1 1 0 0 1 1 .2l.5.5a5 5 0 0 1 1 3V14a2 2 0 0 1-2 2h-1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="19" cy="17" r="1" fill="currentColor"/><rect x="3" y="6" width="14" height="8" rx="2" fill="currentColor" opacity=".15"/></svg>Bensin</div>
+    <div class="ni" onclick="navTo('service')" id="ni-service"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94Z" fill="currentColor" opacity=".15"/></svg>Servis</div>
+    <div class="ni" onclick="navTo('parts')" id="ni-parts"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="3" width="8" height="8" rx="2" stroke="currentColor" stroke-width="1.5"/><rect x="13" y="3" width="8" height="8" rx="2" stroke="currentColor" stroke-width="1.5"/><rect x="13" y="13" width="8" height="8" rx="2" stroke="currentColor" stroke-width="1.5"/><rect x="3" y="13" width="8" height="8" rx="2" stroke="currentColor" stroke-width="1.5"/><rect x="3" y="3" width="8" height="8" rx="2" fill="currentColor" opacity=".15"/><rect x="13" y="13" width="8" height="8" rx="2" fill="currentColor" opacity=".15"/></svg>Parts</div>
+    <div class="ni" onclick="navTo('summary')" id="ni-summary"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="12" width="4" height="9" rx="1.5" fill="currentColor" opacity=".3"/><rect x="10" y="7" width="4" height="14" rx="1.5" fill="currentColor" opacity=".5"/><rect x="17" y="3" width="4" height="18" rx="1.5" fill="currentColor"/><rect x="3" y="12" width="4" height="9" rx="1.5" stroke="currentColor" stroke-width="1.2"/><rect x="10" y="7" width="4" height="14" rx="1.5" stroke="currentColor" stroke-width="1.2"/><rect x="17" y="3" width="4" height="18" rx="1.5" stroke="currentColor" stroke-width="1.2"/></svg>Ringkasan</div>
   </nav>
 </div>
 
@@ -441,6 +441,11 @@ input[type="date"],input[type="datetime-local"],input[type="number"],input[type=
   <button class="btn btn-p mt16" onclick="savePart()">Simpan</button>
 </div></div></div>
 </div>
+
+<!-- FAB - di luar #app agar tidak terpotong overflow:hidden -->
+<button class="fab" id="global-fab" style="display:none" onclick="globalFabClick()">
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/></svg>
+</button>
 
 <script>
 // ── SUPABASE ──────────────────────────────────────────
@@ -555,7 +560,11 @@ function navTo(p){
   document.getElementById('pg-'+p).classList.add('active');
   const ni=document.getElementById('ni-'+p);if(ni)ni.classList.add('on');
   const fab=document.getElementById('global-fab');
-  if(fab){_fabPage=p;fab.style.display=['fuel','service','parts'].includes(p)?'flex':'none';}
+  if(fab){
+    _fabPage=p;
+    const show=['fuel','service','parts'].includes(p);
+    fab.style.display=show?'flex':'none';
+  }
   if(p==='home')rHome();
   if(p==='fuel')rFuel();
   if(p==='service')rSvc();
@@ -565,8 +574,8 @@ function navTo(p){
 }
 
 // ── SHEETS ────────────────────────────────────────────
-function osh(id){const el=document.getElementById(id);el.style.display='flex';requestAnimationFrame(()=>el.classList.add('open'))}
-function csh(id){const el=document.getElementById(id);el.classList.remove('open');setTimeout(()=>el.style.display='none',300)}
+function osh(id){const el=document.getElementById(id);el.style.display='flex';requestAnimationFrame(()=>el.classList.add('open'));const fab=document.getElementById('global-fab');if(fab)fab.dataset.fabVisible=fab.style.display;if(fab)fab.style.display='none';}
+function csh(id){const el=document.getElementById(id);el.classList.remove('open');setTimeout(()=>{el.style.display='none';const anyOpen=document.querySelector('.ovl.open');const fab=document.getElementById('global-fab');if(fab&&!anyOpen&&fab.dataset.fabVisible==='flex')fab.style.display='flex';},300)}
 document.addEventListener('click',function(e){if(e.target.classList.contains('ovl')){const id=e.target.id;if(id)csh(id)}});
 
 // ── AUTH ──────────────────────────────────────────────
@@ -1268,7 +1277,7 @@ function rParts(){
       ${progHtml}${remHtml}
     </div>`;
   }).join('');
-  li.onclick=e=>{const t=e.target.closest('[data-part-id]');if(t)openPartEdit(t.dataset.partId);};
+  li.onclick=e=>{const t=e.target.closest('[data-part-id]');if(t&&li.contains(t))openPartEdit(t.dataset.partId);};
 }
 function setPartFilter(f){partFilter=f;rParts()}
 function openPartsList(){navTo('parts')}
@@ -1500,6 +1509,5 @@ async function init(){
 }
 init();
 </script>
-<button class="fab" id="global-fab" style="display:none" onclick="globalFabClick()">+</button>
 </body>
 </html>
