@@ -91,7 +91,7 @@ input[type="date"],input[type="datetime-local"],input[type="number"],input[type=
 .btn-d{background:var(--rl);color:var(--red)}
 .btn-s{background:var(--card2);color:var(--text)}
 /* fab */
-.fab{position:fixed;bottom:calc(var(--nav) + 16px + env(safe-area-inset-bottom));right:max(16px, calc(50% - 430px/2 + 16px));width:52px;height:52px;border-radius:50%;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(0,122,255,.4);font-size:24px;z-index:30;transition:.2s;font-family:'Manrope',sans-serif}
+.fab{position:absolute;bottom:calc(var(--nav) + 16px + env(safe-area-inset-bottom));right:16px;width:52px;height:52px;border-radius:50%;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(0,122,255,.4);font-size:24px;z-index:30;transition:.2s;font-family:'Manrope',sans-serif}
 .fab:active{transform:scale(.93)}
 /* motor chip */
 .mchip{display:flex;align-items:center;gap:6px;background:var(--card2);border-radius:20px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer;max-width:180px}
@@ -210,8 +210,8 @@ input[type="date"],input[type="datetime-local"],input[type="number"],input[type=
 <!-- AUTH -->
 <div id="auth-page">
   <div style="display:flex;flex-direction:column;align-items:center;margin-bottom:36px">
-    <div style="font-size:52px;margin-bottom:12px">🏍️</div>
-    <div class="a-logo">Ride<span>Log</span></div>
+    <div style="width:72px;height:72px;border-radius:18px;background:#1c1c1e;display:flex;align-items:center;justify-content:center;margin-bottom:12px"><svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="#0a84ff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="7"/><path d="M12 10v3l2 2"/><path d="M5.5 13H3M21 13h-2.5"/><path d="M12 6.5V5"/><path d="M7.5 8 6.5 7M16.5 8l1-1"/><path d="M9 13h1.5"/></svg></div>
+    <div class="a-logo">Ride<span>log</span></div>
     <div class="a-sub">Ride Smarter, Maintain Better</div>
   </div>
   <div class="a-form">
@@ -440,6 +440,8 @@ input[type="date"],input[type="datetime-local"],input[type="number"],input[type=
   <div id="pf-del" style="display:none"><div class="dvd mt12"></div><button class="btn btn-d mt12" onclick="delPart()">Hapus Parts</button></div>
   <button class="btn btn-p mt16" onclick="savePart()">Simpan</button>
 </div></div></div>
+  <button class="fab" id="global-fab" style="display:none" onclick="globalFabClick()">+</button>
+</div>
 
 <script>
 // ── SUPABASE ──────────────────────────────────────────
@@ -1499,6 +1501,5 @@ async function init(){
 }
 init();
 </script>
-  <button class="fab" id="global-fab" style="display:none" onclick="globalFabClick()">+</button>
 </body>
 </html>
