@@ -433,11 +433,7 @@ input[type="date"],input[type="datetime-local"],input[type="number"],input[type=
   </div>
   <div class="fhint" style="margin-top:-8px;margin-bottom:14px">*Notif muncul kalau salah satu tercapai duluan</div>
   <div class="fg"><label class="fl">Catatan</label><input id="pf-note" type="text" placeholder="Quattrini 172"></div>
-  <div class="fg"><label class="fl">Foto <span style="color:var(--muted);font-weight:400;text-transform:none"></span></label>
-    <div class="ph-up" onclick="document.getElementById('pf-photo-in').click()"><span>📷</span><span>Tap untuk pilih foto</span></div>
-    <input type="file" id="pf-photo-in" accept="image/*" style="display:none" onchange="partPhoto(this)">
-    <img id="pf-photo-prev" class="ph-prev" alt="">
-  </div>
+  <div class="fr"><div class="fg"><label class="fl">Merk / Tipe</label><input class="fi" id="pf-brand" placeholder="NGK CR7HSA, OEM..."></div><div class="fg"><label class="fl">Harga Beli</label><div class="pfx"><span>Rp</span><input id="pf-price" type="number" inputmode="numeric" placeholder="85000"></div></div></div>
   <div id="pf-del" style="display:none"><div class="dvd mt12"></div><button class="btn btn-d mt12" onclick="delPart()">Hapus Parts</button></div>
   <button class="btn btn-p mt16" onclick="savePart()">Simpan</button>
 </div></div></div>
@@ -1423,6 +1419,8 @@ function openPartEdit(id){
   // kondisi good (data lama) → tampilkan sebagai warning di form edit
   document.getElementById('pf-cond').value=(p.condition==='good'||!p.condition)?'check':p.condition;
   document.getElementById('pf-date').value=p.installed_date||'';document.getElementById('pf-km').value=p.installed_km||'';document.getElementById('pf-note').value=p.note||'';
+  if(document.getElementById('pf-brand'))document.getElementById('pf-brand').value=p.brand||'';
+  if(document.getElementById('pf-price'))document.getElementById('pf-price').value=p.price||'';
   document.getElementById('pf-lkm').value=p.limit_km||'';document.getElementById('pf-ldate').value=p.limit_date||'';
   if(p.photo){document.getElementById('pf-photo-prev').src=p.photo;document.getElementById('pf-photo-prev').classList.add('show')}
   else{document.getElementById('pf-photo-prev').classList.remove('show');document.getElementById('pf-photo-prev').src=''}
@@ -1547,7 +1545,7 @@ function showKmlDetail(id,date,kml,liter,km2,bayar){
         <div style="font-size:9px;color:var(--muted);margin-top:2px;text-transform:uppercase;letter-spacing:.04em">Bayar</div>
       </div>
     </div>
-    <button id="_kd_close" style="width:100%;padding:11px;border-radius:11px;border:1.5px solid var(--line);background:none;font-size:13px;font-weight:600;cursor:pointer;color:var(--muted)">Tutup</button>
+    <button id="_kd_close" style="width:100%;padding:12px;border-radius:12px;border:1.5px solid var(--line);background:var(--bg2);font-size:13px;font-weight:700;cursor:pointer;color:var(--text);margin-top:4px">Tutup</button>
   </div>`;
   document.getElementById('app').appendChild(m);
   document.getElementById('_kd_close').onclick=()=>m.remove();
