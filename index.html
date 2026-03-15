@@ -816,83 +816,52 @@ function rHome(){
       </div>
     </div>
   </div>`;
-  // ── Tren konsumsi chart (Chart.js) ──────────────
-  const kmlData=S.fuel.filter(f=>f.km_per_liter&&f.km_per_liter>0&&f.km_per_liter<120).slice(0,20).reverse();
+  // ── Tren konsumsi chart (bar style + clickable) ──
+  const kmlData=S.fuel.filter(f=>f.km_per_liter&&f.km_per_liter>0&&f.km_per_liter<120).slice(0,10).reverse();
   const trendEl=document.getElementById('h-trend');
   if(trendEl){
     if(kmlData.length>=1){
-      const isDark=document.documentElement.getAttribute('data-theme')==='dark';
-      const accentClr=isDark?'#5ecfa0':'#2c7a4b';
-      const gridClr=isDark?'rgba(255,255,255,.05)':'rgba(0,0,0,.06)';
-      const tickClr=isDark?'#555':'#aaa';
-      const lastKml=kmlData[kmlData.length-1].km_per_liter;
-      const firstKml=kmlData[0].km_per_liter;
-      const diff=parseFloat((lastKml-firstKml).toFixed(1));
-      const diffTxt=(diff>=0?'↑ +':'↓ ')+Math.abs(diff)+' km/L';
-      const diffClr=diff>=0?(isDark?'#5ecfa0':'#2c7a4b'):(isDark?'#e05858':'#c0392b');
-      const avgVal=parseFloat((kmlData.reduce((a,f)=>a+f.km_per_liter,0)/kmlData.length).toFixed(1));
+      const mx=Math.max(...kmlData.map(f=>f.km_per_liter));
+      const mn=Math.min(...kmlData.map(f=>f.km_per_liter));
+      const avgKmlH=(kmlData.reduce((a,f)=>a+f.km_per_liter,0)/kmlData.length).toFixed(1);
+      const lastKmlH=kmlData[kmlData.length-1].km_per_liter.toFixed(1);
       trendEl.innerHTML=`<div class="card">
         <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px">
           <div>
             <div style="font-size:13px;font-weight:800">Konsumsi km/L</div>
-            <div style="font-size:10px;color:var(--muted);margin-top:2px">${kmlData.length} isian · rata-rata ${avgVal} km/L</div>
+            <div style="font-size:10px;color:var(--muted);margin-top:2px">${kmlData.length} isian · rata-rata ${avgKmlH} km/L</div>
           </div>
-          <div style="text-align:right">
-            <div style="font-size:18px;font-weight:800;color:${accentClr};line-height:1">${lastKml.toFixed(1)}<span style="font-size:10px;font-weight:600;color:var(--muted);margin-left:2px">km/L</span></div>
-            <div style="font-size:10px;font-weight:700;color:${diffClr};margin-top:2px">${diffTxt}</div>
-          </div>
+          <div style="font-size:18px;font-weight:800;color:var(--accent);line-height:1">${lastKmlH}<span style="font-size:10px;font-weight:600;color:var(--muted);margin-left:2px">km/L</span></div>
         </div>
-        <div style="position:relative;width:100%;height:110px">
-          <canvas id="kml-home-chart"></canvas>
-        </div>
+        <div class="hch-bars" style="height:80px" id="home-kml-bars"></div>
       </div>`;
-      function _drawHomeKml(){
-        const ctx=document.getElementById('kml-home-chart');
-        if(!ctx||!window.Chart)return;
-        if(ctx._ci){ctx._ci.destroy();}
-        const vals=kmlData.map(f=>parseFloat(f.km_per_liter.toFixed(2)));
-        const mn=Math.max(0,Math.min(...vals)-4);
-        const mx=Math.max(...vals)+3;
-        ctx._ci=new Chart(ctx,{
-          type:kmlData.length===1?'bar':'line',
-          data:{
-            labels:kmlData.map(f=>fmtDS(f.date)),
-            datasets:[{
-              data:vals,
-              borderColor:accentClr,
-              backgroundColor:isDark?'rgba(94,207,160,.07)':'rgba(44,122,75,.06)',
-              borderWidth:2,
-              pointRadius:vals.map((_,i)=>i===vals.length-1?4:2.5),
-              pointBackgroundColor:vals.map((v,i)=>i===vals.length-1?accentClr:(v===Math.max(...vals)?(isDark?'#5ecfa0':'#2c7a4b'):(isDark?'#333':'#ccc'))),
-              pointBorderColor:isDark?'#111':'#fff',
-              pointBorderWidth:1.5,
-              tension:.35,
-              fill:true
-            }]
-          },
-          options:{
-            responsive:true,maintainAspectRatio:false,
-            plugins:{
-              legend:{display:false},
-              tooltip:{
-                callbacks:{label:c=>`${c.parsed.y.toFixed(1)} km/L`},
-                backgroundColor:isDark?'#1e1e1e':'#fff',
-                titleColor:isDark?'#ccc':'#333',
-                bodyColor:accentClr,
-                borderColor:isDark?'#333':'#e0e0e0',
-                borderWidth:0.5,padding:8
-              }
-            },
-            scales:{
-              x:{grid:{color:gridClr,lineWidth:.5},ticks:{color:tickClr,font:{size:9},maxRotation:0,autoSkip:true,maxTicksLimit:5}},
-              y:{grid:{color:gridClr,lineWidth:.5},ticks:{color:tickClr,font:{size:9},callback:v=>v.toFixed(0)+'km'},suggestedMin:mn,suggestedMax:mx}
-            }
-          }
+      // populate bars
+      const barsEl=document.getElementById('home-kml-bars');
+      if(barsEl){
+        kmlData.forEach(function(f,i){
+          const h=Math.max(8,Math.round(((f.km_per_liter-mn+2)/(mx-mn+4))*68));
+          const isLast=i===kmlData.length-1;
+          const isLow=f.km_per_liter===mn&&kmlData.length>2;
+          const bg=isLast?'var(--accent)':isLow?'var(--red)':'var(--al)';
+          const val=f.km_per_liter.toFixed(1);
+          const liter=f.liters?f.liters.toFixed(1):'—';
+          const km2=f.km_traveled?Math.round(f.km_traveled)+'':'—';
+          const bayar=f.amount_paid?rp(f.amount_paid):'—';
+          const dt=f.date;
+          const bw=document.createElement('div');
+          bw.className='hch-bw';bw.style.cursor='pointer';
+          bw.onclick=function(){showKmlDetail(f.id,dt,val,liter,km2,bayar);};
+          const bar=document.createElement('div');
+          bar.className='hch-b';
+          bar.style.cssText='height:'+h+'px;background:'+bg+';transition:.15s';
+          if(isLast){const sp=document.createElement('span');sp.className='hch-bv';sp.style.color='var(--accent)';sp.textContent=val;bar.appendChild(sp);}
+          const lbl=document.createElement('div');lbl.className='hch-l';lbl.textContent=fmtDS(dt);
+          bw.appendChild(bar);bw.appendChild(lbl);
+          barsEl.appendChild(bw);
         });
       }
-      setTimeout(_drawHomeKml,50);
     }else{
-      trendEl.innerHTML='<div class="card" style="text-align:center;padding:16px;color:var(--muted);font-size:12px">📊 Catat minimal 1 isian bensin dengan km tempuh untuk melihat grafik konsumsi</div>';
+      trendEl.innerHTML='<div class="card" style="text-align:center;padding:16px;color:var(--muted);font-size:12px">📊 Catat isian bensin dengan km tempuh untuk melihat grafik konsumsi</div>';
     }
   }
   // ── Aktivitas terakhir (bensin + servis campur) ─
@@ -1554,6 +1523,36 @@ function rSum(){
   ${!fuel.length&&!svcs.length?`<div class="empty"><div class="empty-ico">📊</div><div class="empty-title">Tidak ada data</div><div class="empty-sub">Belum ada data di periode ini</div></div>`:''}
   ${fuel.length||svcs.length?`<button class="btn btn-s mt12" onclick="exportPDF()" style="display:flex;align-items:center;justify-content:center;gap:8px"><span>📄</span><span>Export PDF</span></button>`:''}`;
 }
+function showKmlDetail(id,date,kml,liter,km2,bayar){
+  const m=document.createElement('div');
+  m.style.cssText='position:absolute;inset:0;background:rgba(0,0,0,.55);z-index:9999;display:flex;align-items:flex-end;justify-content:center;backdrop-filter:blur(4px)';
+  m.innerHTML=`<div style="background:var(--card);border-radius:18px 18px 0 0;width:100%;max-width:430px;padding:18px 18px 36px;border-top:1px solid var(--line)">
+    <div style="width:32px;height:4px;background:var(--line);border-radius:2px;margin:0 auto 14px"></div>
+    <div style="font-size:11px;color:var(--muted);font-weight:600;margin-bottom:10px">${fmtD(date)}</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px">
+      <div style="background:var(--bg2);border-radius:10px;padding:10px 12px">
+        <div style="font-size:20px;font-weight:800;color:var(--accent)">${kml}</div>
+        <div style="font-size:9px;color:var(--muted);margin-top:2px;text-transform:uppercase;letter-spacing:.04em">km/Liter</div>
+      </div>
+      <div style="background:var(--bg2);border-radius:10px;padding:10px 12px">
+        <div style="font-size:20px;font-weight:800;color:var(--text)">${km2 !== '—' ? km2+' km' : '—'}</div>
+        <div style="font-size:9px;color:var(--muted);margin-top:2px;text-transform:uppercase;letter-spacing:.04em">Jarak Tempuh</div>
+      </div>
+      <div style="background:var(--bg2);border-radius:10px;padding:10px 12px">
+        <div style="font-size:20px;font-weight:800;color:var(--text)">${liter} L</div>
+        <div style="font-size:9px;color:var(--muted);margin-top:2px;text-transform:uppercase;letter-spacing:.04em">Liter</div>
+      </div>
+      <div style="background:var(--bg2);border-radius:10px;padding:10px 12px">
+        <div style="font-size:20px;font-weight:800;color:var(--text)">${bayar}</div>
+        <div style="font-size:9px;color:var(--muted);margin-top:2px;text-transform:uppercase;letter-spacing:.04em">Bayar</div>
+      </div>
+    </div>
+    <button id="_kd_close" style="width:100%;padding:11px;border-radius:11px;border:1.5px solid var(--line);background:none;font-size:13px;font-weight:600;cursor:pointer;color:var(--muted)">Tutup</button>
+  </div>`;
+  document.getElementById('app').appendChild(m);
+  document.getElementById('_kd_close').onclick=()=>m.remove();
+  m.onclick=(e)=>{if(e.target===m)m.remove();};
+}
 function exportPDF(){
   const m=gm();if(!m)return;
   const now=new Date();
@@ -1573,25 +1572,25 @@ function exportPDF(){
   const months=['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
   const tgl=`${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()}`;
   const svcByCat={};svcs.forEach(s=>{const k=svcLabel(s.type);svcByCat[k]=(svcByCat[k]||0)+(s.cost||0)});
-  const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>RideLog — ${m.name}</title>
+  const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Brompit — ${m.name}</title>
   <style>
     *{margin:0;padding:0;box-sizing:border-box}
     body{font-family:Arial,sans-serif;color:#1c1c1e;font-size:13px;padding:32px;max-width:680px;margin:0 auto}
     .logo{font-size:22px;font-weight:900;color:#007aff;margin-bottom:4px}
     .subtitle{font-size:12px;color:#8e8e93;margin-bottom:24px}
-    h2{font-size:15px;font-weight:800;margin:20px 0 10px;border-bottom:2px solid #007aff;padding-bottom:6px;color:#007aff}
+    h2{font-size:15px;font-weight:800;margin:20px 0 10px;border-bottom:2px solid #2c7a4b;padding-bottom:6px;color:#2c7a4b}
     .grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:16px}
     .stat{background:#f2f2f7;border-radius:10px;padding:12px}
     .stat-v{font-size:18px;font-weight:800;color:#1c1c1e}
     .stat-l{font-size:10px;color:#8e8e93;margin-top:3px;text-transform:uppercase}
     table{width:100%;border-collapse:collapse;margin-bottom:16px}
-    th{background:#007aff;color:#fff;padding:8px 10px;text-align:left;font-size:11px;font-weight:700}
+    th{background:#2c7a4b;color:#fff;padding:8px 10px;text-align:left;font-size:11px;font-weight:700}
     td{padding:7px 10px;border-bottom:1px solid #e5e5ea;font-size:12px}
     tr:nth-child(even) td{background:#f9f9f9}
     .footer{margin-top:32px;font-size:10px;color:#8e8e93;border-top:1px solid #e5e5ea;padding-top:12px}
     @media print{body{padding:16px}}
   </style></head><body>
-  <div class="logo">🏍️ RideLog</div>
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px"><div class="logo">🏍️ Brompit</div><button onclick="window.close()" style="padding:6px 14px;border-radius:8px;border:1px solid #ddd;background:#f2f2f7;font-size:12px;font-weight:600;cursor:pointer;color:#1c1c1e">← Kembali</button></div>
   <div class="subtitle">Laporan ${periodLabel} · ${m.name}${m.brand?' — '+m.brand:''} · Dicetak ${tgl}</div>
   <h2>Ringkasan</h2>
   <div class="grid">
@@ -1610,7 +1609,7 @@ function exportPDF(){
   <table><tr><th>Tanggal</th><th>Kategori</th><th>Km</th><th>Biaya</th><th>Catatan</th></tr>
   ${svcs.map(s=>`<tr><td>${fmtD(s.date)}</td><td>${svcLabel(s.type)}</td><td>${s.odometer?km(s.odometer):'—'}</td><td>${rp(s.cost)}</td><td>${s.note||'—'}</td></tr>`).join('')}
   </table>`:''}
-  <div class="footer">Dibuat oleh RideLog · ${S.user?.username||''} · ${tgl}</div>
+  <div class="footer">Dibuat oleh Brompit · ${S.user?.username||''} · ${tgl}</div>
   <script>window.onload=()=>{window.print();}<\/script>
   </body></html>`;
   const w=window.open('','_blank');w.document.write(html);w.document.close();
