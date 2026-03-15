@@ -1485,24 +1485,24 @@ function showKmlDetail(id,date,kml,liter,km2,bayar){
     <div style="width:32px;height:4px;background:var(--line);border-radius:2px;margin:0 auto 14px"></div>
     <div style="font-size:11px;color:var(--muted);font-weight:600;margin-bottom:10px">${fmtD(date)}</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px">
-      <div style="background:var(--bg2);border-radius:10px;padding:10px 12px">
+      <div style="background:var(--bg2);border-radius:10px;padding:10px 12px;border:1.5px solid var(--border)">
         <div style="font-size:20px;font-weight:800;color:var(--accent)">${kml}</div>
         <div style="font-size:9px;color:var(--muted);margin-top:2px;text-transform:uppercase;letter-spacing:.04em">km/Liter</div>
       </div>
-      <div style="background:var(--bg2);border-radius:10px;padding:10px 12px">
+      <div style="background:var(--bg2);border-radius:10px;padding:10px 12px;border:1.5px solid var(--border)">
         <div style="font-size:20px;font-weight:800;color:var(--text)">${km2 !== '—' ? km2+' km' : '—'}</div>
         <div style="font-size:9px;color:var(--muted);margin-top:2px;text-transform:uppercase;letter-spacing:.04em">Jarak Tempuh</div>
       </div>
-      <div style="background:var(--bg2);border-radius:10px;padding:10px 12px">
+      <div style="background:var(--bg2);border-radius:10px;padding:10px 12px;border:1.5px solid var(--border)">
         <div style="font-size:20px;font-weight:800;color:var(--text)">${liter} L</div>
         <div style="font-size:9px;color:var(--muted);margin-top:2px;text-transform:uppercase;letter-spacing:.04em">Liter</div>
       </div>
-      <div style="background:var(--bg2);border-radius:10px;padding:10px 12px">
+      <div style="background:var(--bg2);border-radius:10px;padding:10px 12px;border:1.5px solid var(--border)">
         <div style="font-size:20px;font-weight:800;color:var(--text)">${bayar}</div>
         <div style="font-size:9px;color:var(--muted);margin-top:2px;text-transform:uppercase;letter-spacing:.04em">Bayar</div>
       </div>
     </div>
-    <button id="_kd_close" style="width:100%;padding:12px;border-radius:12px;border:1.5px solid var(--line);background:var(--bg2);font-size:13px;font-weight:700;cursor:pointer;color:var(--text);margin-top:4px">Tutup</button>
+    <button id="_kd_close" style="width:100%;padding:12px;border-radius:12px;border:1.5px solid var(--border);background:var(--bg2);font-size:13px;font-weight:700;cursor:pointer;color:var(--text);margin-top:4px">Tutup</button>
   </div>`;
   document.getElementById('app').appendChild(m);
   document.getElementById('_kd_close').onclick=()=>m.remove();
@@ -1593,9 +1593,7 @@ async function savePart(){
   if(!name){toast('Nama parts wajib diisi','e');return}
   const id=document.getElementById('pf-id').value;
   const data={
-    user_id:S.user.id,
-    motor_id:S.mid,
-    name,
+    user_id:S.user.id,motor_id:S.mid,name,
     condition:document.getElementById('pf-cond').value,
     installed_date:document.getElementById('pf-date').value||null,
     installed_km:parseFloat(document.getElementById('pf-km').value)||null,
@@ -1604,14 +1602,8 @@ async function savePart(){
     note:document.getElementById('pf-note').value.trim()||null,
   };
   try{
-    if(id){
-      await dbU(`rl_parts?id=eq.${id}`,data);
-      const i=S.parts.findIndex(p=>p.id===id);
-      S.parts[i]={...S.parts[i],...data};
-    }else{
-      const[p]=await dbP('rl_parts',{...data,id:nuid()});
-      S.parts.unshift(normPart(p));
-    }
+    if(id){await dbU(`rl_parts?id=eq.${id}`,data);const i=S.parts.findIndex(p=>p.id===id);S.parts[i]={...S.parts[i],...data};}
+    else{const[p]=await dbP('rl_parts',{...data,id:nuid()});S.parts.unshift(normPart(p));}
     csh('sh-pf');toast(id?'Parts diperbarui':'Parts ditambahkan','ok');rParts();rHome();
   }catch(err){toast('Gagal: '+err.message,'e')}
 }
