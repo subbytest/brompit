@@ -438,7 +438,6 @@ input[type="date"],input[type="datetime-local"],input[type="number"],input[type=
   </div>
   <div class="fhint" style="margin-top:-8px;margin-bottom:14px">*Notif muncul kalau salah satu tercapai duluan</div>
   <div class="fg"><label class="fl">Catatan</label><input id="pf-note" type="text" placeholder="Quattrini 172"></div>
-  <div class="fr"><div class="fg"><label class="fl">Merk / Tipe</label><input class="fi" id="pf-brand" placeholder="NGK CR7HSA, OEM..."></div><div class="fg"><label class="fl">Harga Beli</label><div class="pfx"><span>Rp</span><input id="pf-price" type="number" inputmode="numeric" placeholder="85000"></div></div></div>
   <div id="pf-del" style="display:none"><div class="dvd mt12"></div><button class="btn btn-d mt12" onclick="delPart()">Hapus Parts</button></div>
   <button class="btn btn-p mt16" onclick="savePart()">Simpan</button>
 </div></div></div>
@@ -1413,8 +1412,6 @@ function openPartAdd(){
   document.getElementById('pf-km').value='';document.getElementById('pf-lkm').value='';
   document.getElementById('pf-date').value=todayD();document.getElementById('pf-ldate').value='';
   document.getElementById('pf-cond').value='check';
-  if(document.getElementById('pf-brand'))document.getElementById('pf-brand').value='';
-  if(document.getElementById('pf-price'))document.getElementById('pf-price').value='';
   document.getElementById('sh-pf-t').textContent='Tambah parts';document.getElementById('pf-del').style.display='none';
   document.getElementById('pf-km-lbl').textContent=gm()?.odo_mode==='odometer'?'Km pasang':'Km tempuh saat pasang';
   osh('sh-pf');
@@ -1425,8 +1422,6 @@ function openPartEdit(id){
   // kondisi good (data lama) → tampilkan sebagai warning di form edit
   document.getElementById('pf-cond').value=(p.condition==='good'||!p.condition)?'check':p.condition;
   document.getElementById('pf-date').value=p.installed_date||'';document.getElementById('pf-km').value=p.installed_km||'';document.getElementById('pf-note').value=p.note||'';
-  if(document.getElementById('pf-brand'))document.getElementById('pf-brand').value=p.brand||'';
-  if(document.getElementById('pf-price'))document.getElementById('pf-price').value=p.price||'';
   document.getElementById('pf-lkm').value=p.limit_km||'';document.getElementById('pf-ldate').value=p.limit_date||'';
   
   document.getElementById('sh-pf-t').textContent='Edit parts';document.getElementById('pf-del').style.display='';
@@ -1590,6 +1585,45 @@ function rSet(){
       <div class="li-body"><div class="li-title">${b.name}</div><div class="li-sub">${rp(b.price)}/liter</div></div>
       <span style="color:var(--muted)">›</span></div>`).join('');
   document.getElementById('dark-tog').checked=document.documentElement.getAttribute('data-theme')==='dark';
+}
+
+// ── PARTS FORM ────────────────────────────────────────
+async function savePart(){
+  const name=document.getElementById('pf-name').value.trim();
+  if(!name){toast('Nama parts wajib diisi','e');return}
+  const id=document.getElementById('pf-id').value;
+  const data={
+    user_id:S.user.id,
+    motor_id:S.mid,
+    name,
+    condition:document.getElementById('pf-cond').value,
+    installed_date:document.getElementById('pf-date').value||null,
+    installed_km:parseFloat(document.getElementById('pf-km').value)||null,
+    limit_km:parseFloat(document.getElementById('pf-lkm').value)||null,
+    limit_date:document.getElementById('pf-ldate').value||null,
+    note:document.getElementById('pf-note').value.trim()||null,
+  };
+  try{
+    if(id){
+      await dbU(`rl_parts?id=eq.${id}`,data);
+      const i=S.parts.findIndex(p=>p.id===id);
+      S.parts[i]={...S.parts[i],...data};
+    }else{
+      const[p]=await dbP('rl_parts',{...data,id:nuid()});
+      S.parts.unshift(normPart(p));
+    }
+    csh('sh-pf');toast(id?'Parts diperbarui':'Parts ditambahkan','ok');rParts();rHome();
+  }catch(err){toast('Gagal: '+err.message,'e')}
+}
+async function delPart(){
+  const id=document.getElementById('pf-id').value;
+  confirmSheet('Hapus parts ini?','Data tidak bisa dikembalikan.',async()=>{
+    try{
+      await dbU(`rl_parts?id=eq.${id}`,{deleted_at:new Date().toISOString()});
+      S.parts=S.parts.filter(p=>p.id!==id);
+      csh('sh-pf');toast('Parts dihapus','ok');rParts();rHome();
+    }catch(err){toast('Gagal: '+err.message,'e')}
+  });
 }
 
 // ── INIT ─────────────────────────────────────────────
