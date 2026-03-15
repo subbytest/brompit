@@ -974,14 +974,91 @@ function rFuel(){
     <div class="sb"><div class="sv o">${rp(moCost)}</div><div class="sl">Bensin bulan ini</div></div>
     <div class="sb"><div class="sv">${totL.toFixed(1)} L</div><div class="sl">Total liter</div></div>
   </div>`;
-  // chart
-  const cd=S.fuel.filter(f=>f.km_per_liter&&f.km_per_liter>0&&f.km_per_liter<200).slice(0,8).reverse();
+  // chart — Chart.js line chart
+  const cd=S.fuel.filter(f=>f.km_per_liter&&f.km_per_liter>0&&f.km_per_liter<200).slice(0,12).reverse();
   if(cd.length>1){
-    const mx=Math.max(...cd.map(f=>f.km_per_liter));
+    const isDark=document.documentElement.getAttribute('data-theme')==='dark';
+    const accentClr=isDark?'#5ecfa0':'#2c7a4b';
+    const gridClr=isDark?'rgba(255,255,255,.06)':'rgba(0,0,0,.06)';
+    const textClr=isDark?'#666':'#aaa';
+    const avgKmlVal=avgKml?Number(avgKml.toFixed(1)):null;
+    const lastKml=cd[cd.length-1].km_per_liter;
+    const trend=cd.length>=2?(lastKml-cd[0].km_per_liter).toFixed(1):null;
+    const trendTxt=trend?(parseFloat(trend)>=0?'↑ +'+trend:' ↓ '+trend)+' km/L vs awal':null;
     ch.innerHTML=`<div class="card" style="margin-bottom:12px">
-      <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px">Konsumsi km/liter</div>
-      <div class="ch-bars">${cd.map((f,i)=>`<div class="ch-bw"><div class="ch-b ${i===cd.length-1?'hi':''}" style="height:${(f.km_per_liter/mx*100).toFixed(0)}%"></div><div class="ch-l">${fmtDS(f.date)}</div></div>`).join('')}</div>
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px">
+        <div>
+          <div style="font-size:12px;font-weight:800">Konsumsi km/Liter</div>
+          <div style="font-size:10px;color:var(--muted);margin-top:2px">${cd.length} isian terakhir</div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:15px;font-weight:800;color:var(--accent)">${lastKml.toFixed(1)} <span style="font-size:10px;font-weight:600;color:var(--muted)">km/L</span></div>
+          ${trendTxt?`<div style="font-size:10px;color:${parseFloat(trend)>=0?'var(--green)':'var(--red)'};font-weight:700">${trendTxt}</div>`:''}
+        </div>
+      </div>
+      <div style="position:relative;width:100%;height:130px;margin-top:8px">
+        <canvas id="kml-chart"></canvas>
+      </div>
     </div>`;
+    // Load Chart.js and render
+    function _renderKmlChart(){
+      const ctx=document.getElementById('kml-chart');if(!ctx)return;
+      if(ctx._chartInst){ctx._chartInst.destroy();}
+      const vals=cd.map(f=>parseFloat(f.km_per_liter.toFixed(2)));
+      const labels=cd.map(f=>fmtDS(f.date));
+      const avg=avgKmlVal;
+      ctx._chartInst=new Chart(ctx,{
+        type:'line',
+        data:{
+          labels,
+          datasets:[{
+            data:vals,
+            borderColor:accentClr,
+            backgroundColor:isDark?'rgba(94,207,160,.08)':'rgba(44,122,75,.06)',
+            borderWidth:2,
+            pointRadius:3,
+            pointHoverRadius:5,
+            pointBackgroundColor:accentClr,
+            pointBorderColor:isDark?'#1a1a1a':'#fff',
+            pointBorderWidth:1.5,
+            tension:.3,
+            fill:true
+          }]
+        },
+        options:{
+          responsive:true,
+          maintainAspectRatio:false,
+          plugins:{
+            legend:{display:false},
+            tooltip:{
+              callbacks:{label:ctx=>`${ctx.parsed.y.toFixed(1)} km/L`},
+              backgroundColor:isDark?'#222':'#fff',
+              titleColor:isDark?'#ccc':'#333',
+              bodyColor:isDark?'#5ecfa0':'#2c7a4b',
+              borderColor:isDark?'#333':'#ddd',
+              borderWidth:0.5
+            },
+            annotation:avg?{annotations:{avg:{type:'line',yMin:avg,yMax:avg,borderColor:isDark?'rgba(94,207,160,.3)':'rgba(44,122,75,.25)',borderWidth:1,borderDash:[4,4]}}}:{}
+          },
+          scales:{
+            x:{grid:{color:gridClr},ticks:{color:textClr,font:{size:9},maxRotation:0,autoSkip:true,maxTicksLimit:6}},
+            y:{
+              grid:{color:gridClr},
+              ticks:{color:textClr,font:{size:9},callback:v=>v.toFixed(0)},
+              suggestedMin:Math.max(0,Math.min(...vals)-5),
+              suggestedMax:Math.max(...vals)+3
+            }
+          }
+        }
+      });
+    }
+    if(window.Chart){_renderKmlChart();}
+    else{
+      const s=document.createElement('script');
+      s.src='https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js';
+      s.onload=_renderKmlChart;
+      document.head.appendChild(s);
+    }
   }else{ch.innerHTML=''}
   li.innerHTML=S.fuel.map(f=>fuelLI(f)).join('');
 }
