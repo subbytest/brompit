@@ -817,7 +817,7 @@ function rHome(){
     </div>
   </div>`;
   // ── Tren konsumsi chart (Chart.js) ──────────────
-  const kmlData=S.fuel.filter(f=>f.km_per_liter&&f.km_per_liter>0&&f.km_per_liter<200).slice(0,12).reverse();
+  const kmlData=S.fuel.filter(f=>f.km_per_liter&&f.km_per_liter>0&&f.km_per_liter<120).slice(0,20).reverse();
   const trendEl=document.getElementById('h-trend');
   if(trendEl){
     if(kmlData.length>=1){
@@ -1044,7 +1044,7 @@ function rFuel(){
     <div class="sb"><div class="sv">${totL.toFixed(1)} L</div><div class="sl">Total liter</div></div>
   </div>`;
   // chart — Chart.js line chart
-  const cd=S.fuel.filter(f=>f.km_per_liter&&f.km_per_liter>0&&f.km_per_liter<200).slice(0,12).reverse();
+  const cd=S.fuel.filter(f=>f.km_per_liter&&f.km_per_liter>0&&f.km_per_liter<120).slice(0,20).reverse();
   if(cd.length>1){
     const isDark=document.documentElement.getAttribute('data-theme')==='dark';
     const accentClr=isDark?'#5ecfa0':'#2c7a4b';
@@ -1192,7 +1192,9 @@ function fuelCalc(){
   const liters=amt&&bbmP?parseFloat((amt/bbmP).toFixed(3)):null;
   const odoV=parseFloat(document.getElementById('fa-odo').value)||null;
   const m=gm();
-  const prev=S.fuel.find(f=>m?.odo_mode==='odometer'?f.odometer!=null:f.km_traveled!=null);
+  const inputDate=document.getElementById('fa-odo')?new Date(document.getElementById('fa-date')?.value||Date.now()):new Date();
+  const prevList=S.fuel.filter(f=>new Date(f.date)<inputDate&&(m?.odo_mode==='odometer'?f.odometer!=null:f.km_traveled!=null));
+  const prev=prevList[0]||null;
   const prevOdo=prev?.odometer||(m?.odo_mode==='odometer'?parseFloat(m?.odo_initial)||null:null);
   let kmt=null;
   if(m?.odo_mode==='odometer'&&odoV&&prevOdo)kmt=odoV-prevOdo;
@@ -1219,7 +1221,9 @@ async function saveFuel(){
   const odoV=parseFloat(document.getElementById('fa-odo').value)||null;
   const m=gm();
   const isManual=m?.odo_mode==='manual';
-  const prev=S.fuel.find(f=>isManual?f.km_traveled!=null:f.odometer!=null);
+  const faDate=new Date(document.getElementById('fa-date').value||Date.now());
+  const prevList2=S.fuel.filter(f=>new Date(f.date)<faDate&&(isManual?f.km_traveled!=null:f.odometer!=null));
+  const prev=prevList2[0]||null;
   const prevOdo=prev?.odometer||(isManual?null:parseFloat(m?.odo_initial)||null);
   let kmt=null;
   if(!isManual&&odoV&&prevOdo){
