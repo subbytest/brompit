@@ -204,6 +204,7 @@ input[type="date"],input[type="datetime-local"],input[type="number"],input[type=
 .flex{display:flex;align-items:center}
 
 </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 </head>
 <body>
 
@@ -889,13 +890,7 @@ function rHome(){
           }
         });
       }
-      if(window.Chart){_drawHomeKml();}
-      else{
-        const sc=document.createElement('script');
-        sc.src='https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js';
-        sc.onload=_drawHomeKml;
-        document.head.appendChild(sc);
-      }
+      setTimeout(_drawHomeKml,50);
     }else{
       trendEl.innerHTML='';
     }
@@ -1126,13 +1121,7 @@ function rFuel(){
         }
       });
     }
-    if(window.Chart){_renderKmlChart();}
-    else{
-      const s=document.createElement('script');
-      s.src='https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js';
-      s.onload=_renderKmlChart;
-      document.head.appendChild(s);
-    }
+    setTimeout(_renderKmlChart,50);
   }else{ch.innerHTML=''}
   li.innerHTML=S.fuel.map(f=>fuelLI(f)).join('');
 }
