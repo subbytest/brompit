@@ -815,13 +815,87 @@ function rHome(){
       </div>
     </div>
   </div>`;
-  // ── Tren konsumsi chart ───────────────────────
-  const kmlData=S.fuel.filter(f=>f.km_per_liter&&f.km_per_liter>0&&f.km_per_liter<200).slice(0,8).reverse();
+  // ── Tren konsumsi chart (Chart.js) ──────────────
+  const kmlData=S.fuel.filter(f=>f.km_per_liter&&f.km_per_liter>0&&f.km_per_liter<200).slice(0,12).reverse();
   const trendEl=document.getElementById('h-trend');
   if(trendEl){
-    if(kmlData.length>1){
-      const mx=Math.max(...kmlData.map(f=>f.km_per_liter));
-      trendEl.innerHTML=`<div class="card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><div style="font-size:12px;font-weight:800">📈 Tren Konsumsi</div><div style="font-size:11px;color:var(--green);font-weight:700">${kmlData[kmlData.length-1].km_per_liter.toFixed(1)} km/L terakhir</div></div><div class="hch-bars">${kmlData.map((f,i)=>{const h=Math.round((f.km_per_liter/mx)*48);const hi=i===kmlData.length-1;return`<div class="hch-bw"><div class="hch-b" style="height:${h}px;background:${hi?'var(--accent)':'var(--al)'}">${hi?`<span class="hch-bv" style="color:var(--accent)">${f.km_per_liter.toFixed(1)}</span>`:''}</div><div class="hch-l">${fmtDS(f.date)}</div></div>`}).join('')}</div></div>`;
+    if(kmlData.length>=2){
+      const isDark=document.documentElement.getAttribute('data-theme')==='dark';
+      const accentClr=isDark?'#5ecfa0':'#2c7a4b';
+      const gridClr=isDark?'rgba(255,255,255,.05)':'rgba(0,0,0,.06)';
+      const tickClr=isDark?'#555':'#aaa';
+      const lastKml=kmlData[kmlData.length-1].km_per_liter;
+      const firstKml=kmlData[0].km_per_liter;
+      const diff=parseFloat((lastKml-firstKml).toFixed(1));
+      const diffTxt=(diff>=0?'↑ +':'↓ ')+Math.abs(diff)+' km/L';
+      const diffClr=diff>=0?(isDark?'#5ecfa0':'#2c7a4b'):(isDark?'#e05858':'#c0392b');
+      const avgVal=parseFloat((kmlData.reduce((a,f)=>a+f.km_per_liter,0)/kmlData.length).toFixed(1));
+      trendEl.innerHTML=`<div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px">
+          <div>
+            <div style="font-size:13px;font-weight:800">Konsumsi km/L</div>
+            <div style="font-size:10px;color:var(--muted);margin-top:2px">${kmlData.length} isian · rata-rata ${avgVal} km/L</div>
+          </div>
+          <div style="text-align:right">
+            <div style="font-size:18px;font-weight:800;color:${accentClr};line-height:1">${lastKml.toFixed(1)}<span style="font-size:10px;font-weight:600;color:var(--muted);margin-left:2px">km/L</span></div>
+            <div style="font-size:10px;font-weight:700;color:${diffClr};margin-top:2px">${diffTxt}</div>
+          </div>
+        </div>
+        <div style="position:relative;width:100%;height:110px">
+          <canvas id="kml-home-chart"></canvas>
+        </div>
+      </div>`;
+      function _drawHomeKml(){
+        const ctx=document.getElementById('kml-home-chart');
+        if(!ctx||!window.Chart)return;
+        if(ctx._ci){ctx._ci.destroy();}
+        const vals=kmlData.map(f=>parseFloat(f.km_per_liter.toFixed(2)));
+        const mn=Math.max(0,Math.min(...vals)-4);
+        const mx=Math.max(...vals)+3;
+        ctx._ci=new Chart(ctx,{
+          type:'line',
+          data:{
+            labels:kmlData.map(f=>fmtDS(f.date)),
+            datasets:[{
+              data:vals,
+              borderColor:accentClr,
+              backgroundColor:isDark?'rgba(94,207,160,.07)':'rgba(44,122,75,.06)',
+              borderWidth:2,
+              pointRadius:vals.map((_,i)=>i===vals.length-1?4:2.5),
+              pointBackgroundColor:vals.map((v,i)=>i===vals.length-1?accentClr:(v===Math.max(...vals)?(isDark?'#5ecfa0':'#2c7a4b'):(isDark?'#333':'#ccc'))),
+              pointBorderColor:isDark?'#111':'#fff',
+              pointBorderWidth:1.5,
+              tension:.35,
+              fill:true
+            }]
+          },
+          options:{
+            responsive:true,maintainAspectRatio:false,
+            plugins:{
+              legend:{display:false},
+              tooltip:{
+                callbacks:{label:c=>`${c.parsed.y.toFixed(1)} km/L`},
+                backgroundColor:isDark?'#1e1e1e':'#fff',
+                titleColor:isDark?'#ccc':'#333',
+                bodyColor:accentClr,
+                borderColor:isDark?'#333':'#e0e0e0',
+                borderWidth:0.5,padding:8
+              }
+            },
+            scales:{
+              x:{grid:{color:gridClr,lineWidth:.5},ticks:{color:tickClr,font:{size:9},maxRotation:0,autoSkip:true,maxTicksLimit:5}},
+              y:{grid:{color:gridClr,lineWidth:.5},ticks:{color:tickClr,font:{size:9},callback:v=>v.toFixed(0)+'km'},suggestedMin:mn,suggestedMax:mx}
+            }
+          }
+        });
+      }
+      if(window.Chart){_drawHomeKml();}
+      else{
+        const sc=document.createElement('script');
+        sc.src='https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js';
+        sc.onload=_drawHomeKml;
+        document.head.appendChild(sc);
+      }
     }else{
       trendEl.innerHTML='';
     }
