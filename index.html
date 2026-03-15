@@ -205,6 +205,11 @@ input[type="date"],input[type="datetime-local"],input[type="number"],input[type=
 
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<link rel="manifest" href="manifest.json">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Brompit">
+<link rel="apple-touch-icon" href="icon-192.svg">
 </head>
 <body>
 
@@ -1408,7 +1413,8 @@ function openPartAdd(){
   document.getElementById('pf-km').value='';document.getElementById('pf-lkm').value='';
   document.getElementById('pf-date').value=todayD();document.getElementById('pf-ldate').value='';
   document.getElementById('pf-cond').value='check';
-  document.getElementById('pf-photo-prev').classList.remove('show');document.getElementById('pf-photo-prev').src='';document.getElementById('pf-photo-in').value='';
+  if(document.getElementById('pf-brand'))document.getElementById('pf-brand').value='';
+  if(document.getElementById('pf-price'))document.getElementById('pf-price').value='';
   document.getElementById('sh-pf-t').textContent='Tambah parts';document.getElementById('pf-del').style.display='none';
   document.getElementById('pf-km-lbl').textContent=gm()?.odo_mode==='odometer'?'Km pasang':'Km tempuh saat pasang';
   osh('sh-pf');
@@ -1422,57 +1428,13 @@ function openPartEdit(id){
   if(document.getElementById('pf-brand'))document.getElementById('pf-brand').value=p.brand||'';
   if(document.getElementById('pf-price'))document.getElementById('pf-price').value=p.price||'';
   document.getElementById('pf-lkm').value=p.limit_km||'';document.getElementById('pf-ldate').value=p.limit_date||'';
-  if(p.photo){document.getElementById('pf-photo-prev').src=p.photo;document.getElementById('pf-photo-prev').classList.add('show')}
-  else{document.getElementById('pf-photo-prev').classList.remove('show');document.getElementById('pf-photo-prev').src=''}
-  document.getElementById('pf-photo-in').value='';
+  
   document.getElementById('sh-pf-t').textContent='Edit parts';document.getElementById('pf-del').style.display='';
   _updatePartFormMode();
   osh('sh-pf');
 }
-function partPhoto(input){
-  const f=input.files[0];if(!f)return;
-  const r=new FileReader();r.onload=e=>{const img=document.getElementById('pf-photo-prev');img.src=e.target.result;img.classList.add('show')};r.readAsDataURL(f);
-}
-async function savePart(){
-  const name=document.getElementById('pf-name').value.trim();
-  if(!name){toast('Nama parts wajib diisi','e');return}
-  const id=document.getElementById('pf-id').value;
-  const photoEl=document.getElementById('pf-photo-prev');
-  const photo=photoEl.classList.contains('show')?photoEl.src:null;
-  const data={user_id:S.user.id,motor_id:S.mid,name,condition:document.getElementById('pf-cond').value||'check',installed_date:document.getElementById('pf-date').value||null,installed_km:parseFloat(document.getElementById('pf-km').value)||null,limit_km:parseFloat(document.getElementById('pf-lkm').value)||null,limit_date:document.getElementById('pf-ldate').value||null,note:document.getElementById('pf-note').value.trim()||null,photo,updated_at:new Date().toISOString()};
-  // Coba simpan dengan condition, kalau constraint error coba tanpa
-  async function tryInsert(payload,withCondition){
-    const d=withCondition?payload:{...payload};
-    if(!withCondition)delete d.condition;
-    if(id){return dbU(`rl_parts?id=eq.${id}`,d);}
-    else{return dbP('rl_parts',{...d,id:nuid()});}
-  }
-  try{
-    let res;
-    try{res=await tryInsert(data,true);}
-    catch(e){
-      if(e.message&&e.message.includes('condition_check')){
-        res=await tryInsert(data,false);
-      }else throw e;
-    }
-    if(!id&&res&&res[0]){S.parts.push(normPart(res[0]));}
-    else if(!id){S.parts.push(normPart({...data,id:nuid()}));}
-    else{const i=S.parts.findIndex(p=>p.id===id);if(i>-1)S.parts[i]={...S.parts[i],...data};}
-    csh('sh-pf');toast(id?'Parts diperbarui':'Parts ditambahkan','ok');rParts();rHome();
-  }catch(err){toast('Gagal: '+err.message,'e')}
-}
-async function delPart(){
-  const id=document.getElementById('pf-id').value;
-  confirmSheet('Hapus parts ini?','Data tidak bisa dikembalikan.',async()=>{
-    try{
-      await dbU(`rl_parts?id=eq.${id}`,{deleted_at:new Date().toISOString()});
-      S.parts=S.parts.filter(p=>p.id!==id);csh('sh-pf');toast('Parts dihapus','ok');rParts();rHome();
-    }catch(err){toast('Gagal: '+err.message,'e')}
-  });
-}
+function partPhoto(e){}
 
-// ── SUMMARY PAGE ──────────────────────────────────────
-let sumP='month';
 function setPeriod(p){
   sumP=p;
   document.querySelectorAll('.seg-b').forEach((b,i)=>b.classList.toggle('on',['week','month','year','all'][i]===p));
@@ -1614,6 +1576,7 @@ function exportPDF(){
 }
 
 // ── SETTINGS ─────────────────────────────────────────
+
 function rSet(){
   document.getElementById('set-user').textContent=S.user?.username||'';
   document.getElementById('set-motors').innerHTML=!S.motors.length?`<div style="color:var(--muted);font-size:13px;padding:8px 0">Belum ada motor</div>`:
