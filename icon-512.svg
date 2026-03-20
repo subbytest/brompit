@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="112" fill="#0a0a0a"/>
+  <!-- speedometer arc -->
+  <path d="M136 346 A120 120 0 0 1 376 346" fill="none" stroke="#0a84ff" stroke-width="14" stroke-linecap="round"/>
+  <!-- needle -->
+  <line x1="256" y1="346" x2="176" y2="186" stroke="#0a84ff" stroke-width="15" stroke-linecap="round"/>
+  <!-- center dot -->
+  <circle cx="256" cy="346" r="20" fill="#0a84ff"/>
+  <!-- tick marks -->
+  <line x1="136" y1="346" x2="155" y2="346" stroke="#0a84ff" stroke-width="12" stroke-linecap="round"/>
+  <line x1="376" y1="346" x2="357" y2="346" stroke="#0a84ff" stroke-width="12" stroke-linecap="round"/>
+  <line x1="256" y1="226" x2="256" y2="245" stroke="#0a84ff" stroke-width="12" stroke-linecap="round"/>
+  <line x1="172" y1="251" x2="185" y2="264" stroke="#0a84ff" stroke-width="12" stroke-linecap="round"/>
+  <line x1="340" y1="251" x2="327" y2="264" stroke="#0a84ff" stroke-width="12" stroke-linecap="round"/>
+</svg>
