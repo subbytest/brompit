@@ -762,214 +762,156 @@ function updBadges(){
 // ── HOME ──────────────────────────────────────────────
 function rHome(){
   updChips();updBadges();
+  ['h-alerts','h-odo','h-parts','h-trend','h-activity','h-schedule'].forEach(id=>{
+    const el=document.getElementById(id);if(el)el.innerHTML='';
+  });
   const m=gm();
   if(!m){
-    document.getElementById('h-odo').innerHTML=`<div class="card" style="text-align:center;padding:32px"><div style="font-size:15px;font-weight:700;margin-bottom:8px">Belum ada motor</div><div style="color:var(--muted);font-size:13px;margin-bottom:16px">Tambah motor untuk mulai mencatat</div><button class="btn btn-p" onclick="openMotorAdd()">+ Tambah Motor</button></div>`;
-    ['h-alerts','h-parts','h-trend','h-activity'].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML=''});
+    document.getElementById('h-odo').innerHTML=`<div class="card" style="padding:32px;text-align:center"><div style="font-size:40px;margin-bottom:12px">🏍️</div><div style="font-weight:700;margin-bottom:8px">Belum ada motor</div><div style="color:var(--muted);font-size:13px;margin-bottom:16px">Tambah motor untuk mulai mencatat</div><button class="btn btn-p" onclick="openMotorAdd()">+ Tambah Motor</button></div>`;
     return;
   }
   const now=new Date();
   const odoNow=curOdo();
-  const moCostFuel=S.fuel.filter(f=>{const d=new Date(f.date);return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear()}).reduce((a,f)=>a+(f.amount_paid||0),0);
-  const moSvcs=S.svcs.filter(s=>{const d=new Date(s.date);return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear()});
-  const moSvcCost=moSvcs.reduce((a,s)=>a+(s.cost||0),0);
-  const kmls=S.fuel.filter(f=>f.km_per_liter&&f.km_per_liter>0&&f.km_per_liter<200).map(f=>f.km_per_liter);
-  const avgKml=kmls.length?(kmls.reduce((a,b)=>a+b,0)/kmls.length):null;
-  const ls=S.svcs[0];
   const nxtSvc=S.svcs.filter(s=>s.next_date||s.next_km).sort((a,b)=>{
     const sa=svcStatus(a),sb=svcStatus(b);
-    if(sa.bad!==sb.bad)return sa.bad?-1:1;
-    if(sa.warn!==sb.warn)return sa.warn?-1:1;
+    const urgA=sa.bad?-9999:sa.warn?-999:0;const urgB=sb.bad?-9999:sb.warn?-999:0;
+    if(urgA!==urgB)return urgA-urgB;
     const da=a.next_date?Math.ceil((new Date(a.next_date)-now)/864e5):9999;
     const db=b.next_date?Math.ceil((new Date(b.next_date)-now)/864e5):9999;
     return da-db;
   })[0];
-  const nxtKmAbs=nxtSvc?.next_km&&odoNow!=null&&nxtSvc.next_km>odoNow?nxtSvc.next_km:null;
-  const lastSvcKm=ls?.odometer||null;
-  const progPct=nxtKmAbs&&lastSvcKm&&odoNow!=null?Math.min(99,Math.round(((odoNow-lastSvcKm)/(nxtKmAbs-lastSvcKm))*100)):null;
-
-  // ── Odometer hero ──
-  document.getElementById('h-odo').innerHTML=`
-    <div class="card">
-      <div style="font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px">${esc(m.name)} · Odometer</div>
-      <div style="font-size:28px;font-weight:800;letter-spacing:-1px;margin-bottom:${nxtKmAbs?'10px':'14px'}">${odoNow!=null?odoNow.toLocaleString('id-ID')+' km':'—'}</div>
-      ${nxtKmAbs?`
-      <div class="prog" style="margin-bottom:5px"><div class="prog-f" style="width:${progPct||0}%;background:var(--accent)"></div></div>
-      <div style="display:flex;justify-content:space-between;margin-bottom:12px">
-        <div style="font-size:9px;color:var(--muted)">Servis terakhir: ${lastSvcKm?km(lastSvcKm):'—'}</div>
-        <div style="font-size:9px;color:var(--accent);font-weight:700">Next: ${km(nxtKmAbs-odoNow)} lagi</div>
-      </div>`:''}
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
-        <div style="background:var(--card2);border-radius:10px;padding:9px 10px;cursor:pointer" onclick="navTo('fuel')">
-          <div style="font-size:13px;font-weight:800;color:var(--green)">${avgKml?avgKml.toFixed(1):'—'}</div>
-          <div style="font-size:8px;color:var(--muted);margin-top:2px;text-transform:uppercase;letter-spacing:.04em">km/liter</div>
-        </div>
-        <div style="background:var(--card2);border-radius:10px;padding:9px 10px;cursor:pointer" onclick="navTo('fuel')">
-          <div style="font-size:13px;font-weight:800;color:var(--accent)">${moCostFuel?rp(moCostFuel):'—'}</div>
-          <div style="font-size:8px;color:var(--muted);margin-top:2px;text-transform:uppercase;letter-spacing:.04em">BBM bulan ini</div>
-        </div>
-        <div style="background:var(--card2);border-radius:10px;padding:9px 10px;cursor:pointer" onclick="navTo('service')">
-          <div style="font-size:13px;font-weight:800;color:var(--orange)">${moSvcCost?rp(moSvcCost):'—'}</div>
-          <div style="font-size:8px;color:var(--muted);margin-top:2px;text-transform:uppercase;letter-spacing:.04em">Servis bulan ini</div>
-        </div>
-      </div>
-    </div>`;
-
-  // ── Alerts (svc + parts) ──
+  const nxtDays=nxtSvc?.next_date?Math.ceil((new Date(nxtSvc.next_date)-now)/864e5):null;
+  // ── Alerts ──
   const alerts=[];
-  S.svcs.forEach(s=>{const st=svcStatus(s);if(st.level!=='ok'){const sub=[];if(st.dateDays!=null)sub.push(st.dateDays<=0?`Telat ${Math.abs(st.dateDays)}hr`:`${st.dateDays}hr lagi`);if(st.kmDays!=null)sub.push(st.kmDays<=0?`Lewat ${Math.abs(Math.round(st.kmDays))} km`:`sisa ${Math.round(st.kmDays)} km`);alerts.push({title:svcLabel(s.type),sub:sub.join(' · '),level:st.level,goto:"navTo('service')"});}});
-  S.parts.forEach(p=>{const st=partStatus(p);if(st.level!=='ok'){const sub=[];if(st.kmStatus)sub.push(st.kmStatus.remaining<=0?`Lewat ${Math.abs(Math.round(st.kmStatus.remaining))} km`:`sisa ${Math.round(st.kmStatus.remaining)} km`);if(st.dateStatus)sub.push(st.dateStatus.days<=0?`Telat ${Math.abs(st.dateStatus.days)}hr`:`${st.dateStatus.days}hr lagi`);if(!sub.length)sub.push(p.condition==='replace'?'Perlu segera diganti':'Perlu dicek');alerts.push({title:p.name,sub:sub.join(' · '),level:st.level,goto:"navTo('parts')"});}});
+  S.svcs.forEach(s=>{const st=svcStatus(s);if(st.level!=='ok'){
+    const d=st.dateDays;const kd=st.kmDays;
+    const sub=[];if(d!=null)sub.push(d<=0?`Telat ${Math.abs(d)} hari`:`${d} hari lagi`);if(kd!=null)sub.push(kd<=0?`Lewat ${Math.abs(Math.round(kd))} km`:`sisa ${Math.round(kd)} km`);
+    alerts.push({title:svcLabel(s.type),sub:sub.join(' · '),level:st.level,goto:"navTo('service')"});
+  }});
+  S.parts.forEach(p=>{const st=partStatus(p);if(st.level!=='ok'){
+    const sub=[];
+    if(st.kmStatus)sub.push(st.kmStatus.remaining<=0?`Lewat ${Math.abs(Math.round(st.kmStatus.remaining))} km`:`sisa ${Math.round(st.kmStatus.remaining)} km`);
+    if(st.dateStatus)sub.push(st.dateStatus.days<=0?`Telat ${Math.abs(st.dateStatus.days)} hari`:`${st.dateStatus.days} hari lagi`);
+    if(!sub.length)sub.push(p.condition==='replace'?'Perlu segera diganti':'Perlu dicek');
+    alerts.push({title:p.name,sub:sub.join(' · '),level:st.level,goto:"navTo('parts')"});
+  }});
   const alertEl=document.getElementById('h-alerts');
-  if(alertEl&&alerts.length){
+  if(alertEl&&alerts.length&&!S.alertDismissed){
     const worst=alerts.some(a=>a.level==='bad');
-    alertEl.innerHTML=`<div style="background:${worst?'var(--rl)':'var(--ol)'};border-radius:var(--radius);padding:11px 13px;display:flex;align-items:center;gap:10px">
+    alertEl.innerHTML=`<div style="background:${worst?'var(--rl)':'var(--ol)'};border-radius:var(--radius);padding:10px 14px;display:flex;align-items:center;gap:10px">
       <div style="width:6px;height:6px;border-radius:50%;background:${worst?'var(--red)':'var(--orange)'};flex-shrink:0"></div>
       <div style="flex:1;min-width:0;cursor:pointer" onclick="${alerts[0].goto}">
         <div style="font-size:12px;font-weight:700;color:${worst?'var(--red)':'var(--orange)'}">${alerts.length} item perlu perhatian</div>
         <div style="font-size:10px;color:var(--muted);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${alerts.map(a=>a.title).join(' · ')}</div>
       </div>
-      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round" style="cursor:pointer;flex-shrink:0" onclick="navTo('${alerts[0].goto.includes('parts')?'parts':'service'}')"><path d="m9 18 6-6-6-6"/></svg>
-      <button onclick="document.getElementById('h-alerts').innerHTML='';document.getElementById('h-parts').innerHTML=''" style="width:26px;height:26px;border-radius:50%;background:rgba(255,255,255,.1);border:none;cursor:pointer;color:var(--muted);font-size:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-family:Manrope,sans-serif">✕</button>
+      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round" style="cursor:pointer;flex-shrink:0" onclick="${alerts[0].goto}"><path d="m9 18 6-6-6-6"/></svg>
+      <button onclick="S.alertDismissed=true;document.getElementById('h-alerts').innerHTML=''" style="width:26px;height:26px;border-radius:50%;background:rgba(255,255,255,.1);border:none;cursor:pointer;color:var(--muted);font-size:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-family:Manrope,sans-serif">✕</button>
     </div>`;
-    // Sembunyikan parts preview karena sudah ada alert strip
-    if(partsEl)partsEl.innerHTML='';
-  }else if(alertEl)alertEl.innerHTML='';
-
-  // ── Parts health preview — hanya tampil kalau tidak ada alert ──
-  const partsEl=document.getElementById('h-parts');
-  const urgentParts=S.parts.filter(p=>partStatus(p).level!=='ok').slice(0,3);
-  if(partsEl&&urgentParts.length&&!alerts.length){
-    partsEl.innerHTML=`<div class="card">
-      <div class="sec-title" style="padding:0 0 8px">Kondisi Parts</div>
-      ${urgentParts.map(p=>{
-        const st=partStatus(p);
-        const col=st.level==='bad'?'var(--red)':'var(--orange)';
-        let progHtml='';
-        if(st.kmStatus){
-          const pct=Math.min(st.kmStatus.pct,1);
-          progHtml=`<div class="prog" style="margin-top:6px"><div class="prog-f" style="width:${(pct*100).toFixed(0)}%;background:${col}"></div></div>`;
-        }
-        return`<div style="margin-bottom:10px;cursor:pointer" onclick="navTo('parts')">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px">
-            <div style="font-size:12px;font-weight:700">${esc(p.name)}</div>
-            <div style="font-size:10px;font-weight:700;color:${col}">${st.level==='bad'?'Ganti sekarang':'Perlu cek'}</div>
-          </div>
-          ${st.kmStatus?`<div style="font-size:10px;color:var(--muted)">${st.kmStatus.remaining>0?'Sisa '+Math.round(st.kmStatus.remaining)+' km':'Lewat '+Math.abs(Math.round(st.kmStatus.remaining))+' km'} · limit ${st.kmStatus.limit.toLocaleString('id-ID')} km</div>`:''}
-          ${progHtml}
-        </div>`;
-      }).join('')}
-      <div style="text-align:center;margin-top:4px"><span style="font-size:11px;color:var(--accent);font-weight:700;cursor:pointer" onclick="navTo('parts')">Lihat semua →</span></div>
-    </div>`;
-  }else if(partsEl)partsEl.innerHTML='';
-
-  // ── KML trend chart ──
-  const kmlData=S.fuel.filter(f=>f.km_per_liter&&f.km_per_liter>0&&f.km_per_liter<200).slice(0,10).reverse();
+  }
+  // ── Odometer hero ──
+  const lf=S.fuel[0];const ls=S.svcs[0];
+  const moSvcs=S.svcs.filter(s=>{const d=new Date(s.date);return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear()});
+  const moSvcCost=moSvcs.reduce((a,s)=>a+(s.cost||0),0);
+  const nxtKmAbs=nxtSvc?.next_km&&odoNow!=null&&nxtSvc.next_km>odoNow?nxtSvc.next_km:null;
+  const kmls=S.fuel.filter(f=>f.km_per_liter&&f.km_per_liter>0&&f.km_per_liter<200).map(f=>f.km_per_liter);
+  const avgKml=kmls.length?(kmls.reduce((a,b)=>a+b,0)/kmls.length).toFixed(1):null;
+  const moCostFuel=S.fuel.filter(f=>{const d=new Date(f.date);return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear()}).reduce((a,f)=>a+(f.amount_paid||0),0);
+  const lastSvcKm=ls?.odometer||null;
+  const progPct=nxtKmAbs&&lastSvcKm&&odoNow!=null?Math.min(99,Math.round(((odoNow-lastSvcKm)/(nxtKmAbs-lastSvcKm))*100)):null;
+  const odoEl=document.getElementById('h-odo');
+  if(odoEl)odoEl.innerHTML=`<div style="background:linear-gradient(135deg,var(--bg2),var(--card));border:1px solid var(--al);border-radius:var(--radius);padding:16px">
+    <div style="font-size:10px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px">${esc(m.name)} · Odometer</div>
+    <div style="font-size:28px;font-weight:800;letter-spacing:-1px;margin-bottom:${nxtKmAbs||nxtDays?'10px':'0'}">
+      ${odoNow!=null?odoNow.toLocaleString('id-ID')+' km':'—'} <span style="font-size:13px;color:var(--muted);font-weight:600"></span>
+    </div>
+    ${nxtKmAbs?`
+    <div style="height:5px;background:var(--card2);border-radius:3px;overflow:hidden;margin-bottom:5px">
+      <div style="height:100%;width:${progPct||0}%;background:linear-gradient(90deg,var(--green),var(--accent));border-radius:3px;transition:.5s"></div>
+    </div>
+    <div style="display:flex;justify-content:space-between;margin-bottom:12px">
+      <div style="font-size:9px;color:var(--muted)">Servis terakhir: ${lastSvcKm?km(lastSvcKm):'—'}</div>
+      <div style="font-size:9px;color:var(--green);font-weight:700">Next: ${km(nxtKmAbs)} (sisa ${km(nxtKmAbs-odoNow)})</div>
+    </div>`:''}
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
+      <div style="background:rgba(255,255,255,.06);border-radius:10px;padding:8px 10px;cursor:pointer" onclick="navTo('fuel')">
+        <div style="font-size:13px;font-weight:800;color:var(--green)">${avgKml||'—'}</div>
+        <div style="font-size:9px;color:var(--muted);margin-top:2px;text-transform:uppercase;letter-spacing:.04em">km/liter</div>
+      </div>
+      <div style="background:rgba(255,255,255,.06);border-radius:10px;padding:8px 10px;cursor:pointer" onclick="navTo('fuel')">
+        <div style="font-size:13px;font-weight:800;color:var(--accent)">${moCostFuel?rp(moCostFuel):'—'}</div>
+        <div style="font-size:9px;color:var(--muted);margin-top:2px;text-transform:uppercase;letter-spacing:.04em">bbm bulan ini</div>
+      </div>
+      <div style="background:rgba(255,255,255,.06);border-radius:10px;padding:8px 10px;cursor:pointer" onclick="navTo('service')">
+        <div style="font-size:13px;font-weight:800;color:var(--orange)">${moSvcCost?rp(moSvcCost):'—'}</div>
+        <div style="font-size:9px;color:var(--muted);margin-top:2px;text-transform:uppercase;letter-spacing:.04em">servis bulan ini</div>
+      </div>
+    </div>
+  </div>`;
+  // ── Trend chart — muncul dari 1 data ──
+  const kmlData=S.fuel.filter(f=>f.km_per_liter&&f.km_per_liter>0&&f.km_per_liter<120).slice(0,10).reverse();
   const trendEl=document.getElementById('h-trend');
   if(trendEl){
-    if(kmlData.length>=2){
+    if(kmlData.length>=1){
       const mx=Math.max(...kmlData.map(f=>f.km_per_liter));
       const mn=Math.min(...kmlData.map(f=>f.km_per_liter));
-      const avgH=(kmlData.reduce((a,f)=>a+f.km_per_liter,0)/kmlData.length).toFixed(1);
-      const lastH=kmlData[kmlData.length-1].km_per_liter.toFixed(1);
+      const avgKmlH=(kmlData.reduce((a,f)=>a+f.km_per_liter,0)/kmlData.length).toFixed(1);
+      const lastKmlH=kmlData[kmlData.length-1].km_per_liter.toFixed(1);
       trendEl.innerHTML=`<div class="card">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-          <div><div style="font-size:12px;font-weight:700">Konsumsi km/L</div><div style="font-size:9px;color:var(--muted);margin-top:2px">${kmlData.length} isian · rata-rata ${avgH}</div></div>
-          <div style="font-size:17px;font-weight:800;color:var(--accent)">${lastH}<span style="font-size:10px;color:var(--muted);font-weight:600"> km/L</span></div>
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px">
+          <div>
+            <div style="font-size:13px;font-weight:800">Konsumsi km/L</div>
+            <div style="font-size:10px;color:var(--muted);margin-top:2px">${kmlData.length} isian · rata-rata ${avgKmlH} km/L</div>
+          </div>
+          <div style="font-size:18px;font-weight:800;color:var(--accent);line-height:1">${lastKmlH}<span style="font-size:10px;font-weight:600;color:var(--muted);margin-left:2px">km/L</span></div>
         </div>
-        <div class="hch-bars" id="home-kml-bars"></div>
+        <div class="hch-bars" style="height:80px" id="home-kml-bars"></div>
       </div>`;
       const barsEl=document.getElementById('home-kml-bars');
       if(barsEl){
         kmlData.forEach((f,i)=>{
-          const h=Math.max(8,Math.round(((f.km_per_liter-mn+1)/(mx-mn+3))*64));
+          const h=Math.max(8,Math.round(((f.km_per_liter-mn+2)/(mx-mn+4))*68));
           const isLast=i===kmlData.length-1;
           const isLow=f.km_per_liter===mn&&kmlData.length>2;
           const bg=isLast?'var(--accent)':isLow?'var(--red)':'var(--al)';
           const bw=document.createElement('div');bw.className='hch-bw';bw.style.cursor='pointer';
           bw.onclick=()=>showFuelBarDetail(f);
-          const bar=document.createElement('div');bar.className='hch-b';bar.style.cssText=`height:${h}px;background:${bg}`;
+          const bar=document.createElement('div');bar.className='hch-b';
+          bar.style.cssText='height:'+h+'px;background:'+bg+';transition:.15s';
           if(isLast){const sp=document.createElement('span');sp.className='hch-bv';sp.style.color='var(--accent)';sp.textContent=f.km_per_liter.toFixed(1);bar.appendChild(sp);}
           const lbl=document.createElement('div');lbl.className='hch-l';lbl.textContent=fmtDS(f.date);
           bw.appendChild(bar);bw.appendChild(lbl);barsEl.appendChild(bw);
         });
       }
-    }else if(trendEl)trendEl.innerHTML='';
+    }else{
+      trendEl.innerHTML='<div class="card" style="text-align:center;padding:16px;color:var(--muted);font-size:12px">Catat isian bensin dengan km tempuh untuk melihat grafik konsumsi</div>';
+    }
   }
-
-  // ── Recent activity — selalu tampil kalau ada data ──
+  // ── Aktivitas terakhir ──
   const actEl=document.getElementById('h-activity');
   if(actEl){
-    const fActs=S.fuel.slice(0,4).map(f=>({date:new Date(f.date),ico:'⛽',icoClass:'g',title:'Isi bensin',sub:fmtDS(f.date)+(f.liters?' · '+f.liters.toFixed(1)+'L':''),right:rp(f.amount_paid),right2:f.km_per_liter?f.km_per_liter.toFixed(1)+' km/L':null,goto:"navTo('fuel')"}));
-    const sActs=S.svcs.slice(0,4).map(s=>({date:new Date(s.date),ico:svcIco(s.type),icoClass:'o',title:svcLabel(s.type),sub:fmtDS(s.date)+(s.odometer?' · '+km(s.odometer):''),right:rp(s.cost),right2:null,goto:"navTo('service')"}));
-    const acts=[...fActs,...sActs].sort((a,b)=>b.date-a.date).slice(0,6);
+    const fuelActs=S.fuel.slice(0,5).map(f=>({date:new Date(f.date),ico:'⛽',icoClass:'g',label:'Isi bensin',sub:fmtDS(f.date)+(f.liters?' · '+f.liters.toFixed(1)+'L':''),val:f.km_per_liter?f.km_per_liter.toFixed(1)+' km/L':null,val2:rp(f.amount_paid),color:'var(--green)',goto:"navTo('fuel')"}));
+    const svcActs=S.svcs.slice(0,5).map(s=>({date:new Date(s.date),ico:svcIco(s.type),icoClass:'o',label:svcLabel(s.type),sub:fmtDS(s.date)+(s.odometer?' · '+km(s.odometer):''),val:s.note||null,val2:rp(s.cost),color:'var(--orange)',goto:"navTo('service')"}));
+    const acts=[...fuelActs,...svcActs].sort((a,b)=>b.date-a.date).slice(0,6);
     if(acts.length){
       actEl.innerHTML=`<div class="card" style="padding:0;overflow:hidden">
         <div style="padding:12px 14px 8px;display:flex;justify-content:space-between;align-items:center">
-          <div style="font-size:12px;font-weight:700">Aktivitas Terakhir</div>
-          <span style="font-size:11px;color:var(--accent);font-weight:700;cursor:pointer" onclick="navTo('fuel')">Lihat semua →</span>
+          <div style="font-size:12px;font-weight:800">Aktivitas Terakhir</div>
         </div>
         ${acts.map(a=>`<div style="display:flex;align-items:center;gap:10px;padding:10px 14px;border-top:1px solid var(--border);cursor:pointer" onclick="${a.goto}">
           <div class="li-ico ${a.icoClass}">${a.ico}</div>
-          <div style="flex:1;min-width:0"><div style="font-size:12px;font-weight:700">${esc(a.title)}</div><div style="font-size:10px;color:var(--muted);margin-top:1px">${esc(a.sub)}</div></div>
+          <div style="flex:1;min-width:0">
+            <div style="font-size:12px;font-weight:700">${esc(a.label)}</div>
+            <div style="font-size:10px;color:var(--muted);margin-top:1px">${esc(a.sub)}</div>
+          </div>
           <div style="text-align:right;flex-shrink:0">
-            ${a.right2?`<div style="font-size:10px;color:var(--accent);font-weight:700">${esc(a.right2)}</div>`:''}
-            <div style="font-size:12px;font-weight:700;margin-top:${a.right2?'2':'0'}px">${esc(a.right)}</div>
+            ${a.val?`<div style="font-size:10px;color:${a.color};font-weight:700">${esc(a.val)}</div>`:''}
+            <div style="font-size:12px;font-weight:700;margin-top:${a.val?'2':'0'}px">${esc(a.val2)}</div>
           </div>
         </div>`).join('')}
       </div>`;
-    }else{
-      // Belum ada aktivitas sama sekali — tampilkan quick action
-      actEl.innerHTML=`<div class="card" style="text-align:center;padding:24px 16px">
-        <div style="font-size:13px;font-weight:700;margin-bottom:6px">Mulai catat aktivitas</div>
-        <div style="font-size:11px;color:var(--muted);margin-bottom:16px;line-height:1.6">Tap + untuk mencatat bensin,<br>servis, atau kondisi parts</div>
-        <div style="display:flex;gap:8px">
-          <button onclick="openFuelAdd()" style="flex:1;padding:10px;border-radius:10px;background:var(--gl);color:var(--green);font-size:12px;font-weight:700;border:none;cursor:pointer;font-family:Manrope,sans-serif">+ Bensin</button>
-          <button onclick="openSvcAdd()" style="flex:1;padding:10px;border-radius:10px;background:var(--ol);color:var(--orange);font-size:12px;font-weight:700;border:none;cursor:pointer;font-family:Manrope,sans-serif">+ Servis</button>
-          <button onclick="openPartAdd()" style="flex:1;padding:10px;border-radius:10px;background:var(--al);color:var(--accent);font-size:12px;font-weight:700;border:none;cursor:pointer;font-family:Manrope,sans-serif">+ Parts</button>
-        </div>
-      </div>`;
-    }
-  }
-
-  // ── Jadwal servis berikutnya ──
-  const nxtSvcs=S.svcs.filter(s=>s.next_date||s.next_km).sort((a,b)=>{
-    const sa=svcStatus(a),sb=svcStatus(b);
-    if(sa.bad!==sb.bad)return sa.bad?-1:1;
-    if(sa.warn!==sb.warn)return sa.warn?-1:1;
-    const da=a.next_date?Math.ceil((new Date(a.next_date)-now)/864e5):9999;
-    const db=b.next_date?Math.ceil((new Date(b.next_date)-now)/864e5):9999;
-    return da-db;
-  }).slice(0,3);
-  const schedEl=document.getElementById('h-schedule');
-  if(schedEl){
-    if(nxtSvcs.length){
-      schedEl.innerHTML=`<div class="card" style="padding:0;overflow:hidden">
-        <div style="padding:12px 14px 8px;display:flex;justify-content:space-between;align-items:center">
-          <div style="font-size:12px;font-weight:700">Jadwal Servis</div>
-          <span style="font-size:11px;color:var(--accent);font-weight:700;cursor:pointer" onclick="navTo('service')">Lihat semua →</span>
-        </div>
-        ${nxtSvcs.map(s=>{
-          const st=svcStatus(s);
-          const kmRem=st.kmDays!=null?Math.round(st.kmDays):null;
-          const dayRem=s.next_date?Math.ceil((new Date(s.next_date)-now)/864e5):null;
-          const col=st.bad?'var(--red)':st.warn?'var(--orange)':'var(--green)';
-          const sub=[];
-          if(dayRem!=null)sub.push(dayRem<=0?`Telat ${Math.abs(dayRem)}hr`:`${dayRem}hr lagi`);
-          if(kmRem!=null)sub.push(kmRem<=0?`Lewat ${Math.abs(kmRem)} km`:`sisa ${kmRem} km`);
-          return`<div style="display:flex;align-items:center;gap:10px;padding:10px 14px;border-top:1px solid var(--border);cursor:pointer" onclick="openSvcEdit('${s.id}')">
-            <div class="li-ico o">${svcIco(s.type)}</div>
-            <div style="flex:1;min-width:0">
-              <div style="font-size:12px;font-weight:700">${esc(svcLabel(s.type))}</div>
-              <div style="font-size:10px;color:var(--muted);margin-top:1px">${sub.join(' · ')||'Terjadwal'}</div>
-            </div>
-            <div class="badge ${st.bad?'r':st.warn?'o':'g'}">${st.bad?'Segera':st.warn?'Cek':'Aman'}</div>
-          </div>`;
-        }).join('')}
-      </div>`;
-    }else schedEl.innerHTML='';
+    }else actEl.innerHTML='';
   }
 }
-
 // ── FUEL PAGE ─────────────────────────────────────────
 function rFuel(){
   updChips();
@@ -1485,8 +1427,23 @@ function exportPDF(){
   const cpk=totKm&&(fc+sc)?Math.round((fc+sc)/totKm):null;
   const periodLabel={week:'Minggu Ini',month:'Bulan Ini',year:'Tahun Ini',all:'Semua Waktu'}[sumP];
   const tgl=now.toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'});
-  const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Brompit — ${esc(m.name)}</title>
-  <style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:system-ui,sans-serif;color:#1c1c1e;font-size:13px;padding:32px;max-width:680px;margin:0 auto}.logo{font-size:22px;font-weight:800;color:#007aff;margin-bottom:4px}.sub{font-size:12px;color:#8e8e93;margin-bottom:24px}h2{font-size:14px;font-weight:700;margin:20px 0 10px;padding-bottom:6px;border-bottom:2px solid #007aff;color:#007aff}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}.stat{background:#f2f2f7;border-radius:10px;padding:12px}.stat-v{font-size:17px;font-weight:800}.stat-l{font-size:9px;color:#8e8e93;margin-top:3px;text-transform:uppercase}table{width:100%;border-collapse:collapse;margin-bottom:16px}th{background:#007aff;color:#fff;padding:8px 10px;text-align:left;font-size:11px;font-weight:700}td{padding:7px 10px;border-bottom:1px solid #e5e5ea;font-size:12px}tr:nth-child(even) td{background:#f9f9f9}.footer{margin-top:28px;font-size:10px;color:#8e8e93;border-top:1px solid #e5e5ea;padding-top:12px}@media print{body{padding:16px}}</style>
+
+  // ── Teks ringkasan untuk clipboard ──
+  const ringkasanTxt=[
+    `🏍️ Brompit — ${m.name}${m.brand?' ('+m.brand+')':''}`,
+    `📅 ${periodLabel} · ${tgl}`,
+    ``,
+    `💰 Total: ${rp(fc+sc)}`,
+    `⛽ Bensin: ${rp(fc)}${fl>0?' ('+fl.toFixed(1)+' L)':''}`,
+    `🔧 Servis: ${rp(sc)}`,
+    avgKml?`📊 Efisiensi rata-rata: ${avgKml} km/L`:'',
+    totKm?`📏 Jarak tempuh: ${km(totKm)}`:'',
+    cpk?`💲 Biaya per km: Rp ${cpk}/km`:'',
+  ].filter(Boolean).join('\n');
+
+  // ── HTML untuk PDF ──
+  const htmlContent=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Brompit — ${esc(m.name)}</title>
+  <style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:system-ui,sans-serif;color:#1c1c1e;font-size:13px;padding:32px;max-width:680px;margin:0 auto}.logo{font-size:22px;font-weight:800;color:#0a84ff;margin-bottom:4px}.sub{font-size:12px;color:#8e8e93;margin-bottom:24px}h2{font-size:14px;font-weight:700;margin:20px 0 10px;padding-bottom:6px;border-bottom:2px solid #0a84ff;color:#0a84ff}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}.stat{background:#f2f2f7;border-radius:10px;padding:12px}.stat-v{font-size:17px;font-weight:800}.stat-l{font-size:9px;color:#8e8e93;margin-top:3px;text-transform:uppercase}table{width:100%;border-collapse:collapse;margin-bottom:16px}th{background:#0a84ff;color:#fff;padding:8px 10px;text-align:left;font-size:11px;font-weight:700}td{padding:7px 10px;border-bottom:1px solid #e5e5ea;font-size:12px}tr:nth-child(even) td{background:#f9f9f9}.footer{margin-top:28px;font-size:10px;color:#8e8e93;border-top:1px solid #e5e5ea;padding-top:12px}@media print{body{padding:16px}}</style>
   </head><body>
   <div class="logo">Brompit</div>
   <div class="sub">Laporan ${esc(periodLabel)} · ${esc(m.name)}${m.brand?' — '+esc(m.brand):''} · ${esc(tgl)}</div>
@@ -1504,9 +1461,40 @@ function exportPDF(){
   <div class="footer">Dibuat oleh Brompit · ${esc(S.user?.username||'')} · ${esc(tgl)}</div>
   <script>window.onload=()=>{window.print()}<\/script>
   </body></html>`;
-  const w=window.open('','_blank');
-  if(!w){toast('Izinkan popup untuk export PDF','e');return}
-  w.document.write(html);w.document.close();
+
+  // ── Preview sheet ──
+  const prev=document.createElement('div');
+  prev.style.cssText='position:fixed;inset:0;background:var(--bg2);z-index:9999;display:flex;flex-direction:column';
+  prev.innerHTML=`
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:var(--card);border-bottom:1px solid var(--border);flex-shrink:0">
+      <button id="_prev-back" style="font-size:13px;font-weight:700;color:var(--text);padding:8px 12px;background:var(--card2);border-radius:10px;border:1px solid var(--border);cursor:pointer;font-family:Manrope,sans-serif">← Kembali</button>
+      <div style="font-size:15px;font-weight:800;letter-spacing:-.3px">Preview PDF</div>
+      <button id="_prev-dl" style="font-size:13px;font-weight:700;color:#fff;background:var(--accent);padding:8px 14px;border-radius:10px;border:none;cursor:pointer;font-family:Manrope,sans-serif">Download</button>
+    </div>
+    <div style="flex:1;overflow-y:auto;padding:16px">
+      <div style="background:#fff;border-radius:var(--radius);overflow:hidden;box-shadow:var(--sh);max-width:600px;margin:0 auto">${htmlContent.replace(/<script[\s\S]*?<\/script>/,'')}</div>
+    </div>
+    <div style="padding:12px 16px;background:var(--card);border-top:1px solid var(--border);flex-shrink:0">
+      <button id="_prev-copy" style="width:100%;padding:13px;border-radius:var(--radius-sm);background:var(--card2);border:1px solid var(--border);font-size:14px;font-weight:700;cursor:pointer;color:var(--text);font-family:Manrope,sans-serif">Salin Ringkasan ke Clipboard</button>
+    </div>`;
+  document.body.appendChild(prev);
+  prev.querySelector('#_prev-back').onclick=()=>prev.remove();
+  prev.querySelector('#_prev-dl').onclick=()=>{
+    const w=window.open('','_blank');
+    if(!w){toast('Izinkan popup untuk download PDF','e');return}
+    w.document.write(htmlContent);w.document.close();
+  };
+  prev.querySelector('#_prev-copy').onclick=()=>{
+    navigator.clipboard.writeText(ringkasanTxt).then(()=>{
+      toast('Ringkasan disalin!','ok');
+    }).catch(()=>{
+      // fallback
+      const ta=document.createElement('textarea');
+      ta.value=ringkasanTxt;ta.style.position='fixed';ta.style.opacity='0';
+      document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove();
+      toast('Ringkasan disalin!','ok');
+    });
+  };
 }
 
 // ── MOTOR FORM ────────────────────────────────────────
