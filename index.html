@@ -204,7 +204,7 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
 <div id="auth-page">
   <div style="display:flex;flex-direction:column;align-items:center;margin-bottom:36px">
     <svg viewBox="0 0 48 48" width="64" height="64" fill="none" stroke="#0a84ff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:12px"><path d="M8 34 A16 16 0 0 1 40 34"/><line x1="24" y1="34" x2="14" y2="18" stroke="#0a84ff" stroke-width="2"/><circle cx="24" cy="34" r="2.5" fill="#0a84ff"/><line x1="8" y1="34" x2="11" y2="34"/><line x1="40" y1="34" x2="37" y2="34"/><line x1="24" y1="18" x2="24" y2="21"/><line x1="12.5" y1="21.5" x2="14.5" y2="23.5"/><line x1="35.5" y1="21.5" x2="33.5" y2="23.5"/></svg>
-    <div class="a-logo">Brom<span>pit</span></div>
+    <div class="a-logo">Brompit</div>
     <div class="a-sub">Log aktiviti pitmu</div>
   </div>
   <div class="a-form">
@@ -241,6 +241,7 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
       <div id="h-parts"></div>
       <div id="h-trend"></div>
       <div id="h-activity"></div>
+      <div id="h-schedule"></div>
     </div>
   </div>
 
@@ -895,15 +896,18 @@ function rHome(){
     }else if(trendEl)trendEl.innerHTML='';
   }
 
-  // ── Recent activity ──
+  // ── Recent activity — selalu tampil kalau ada data ──
   const actEl=document.getElementById('h-activity');
   if(actEl){
     const fActs=S.fuel.slice(0,4).map(f=>({date:new Date(f.date),ico:'⛽',icoClass:'g',title:'Isi bensin',sub:fmtDS(f.date)+(f.liters?' · '+f.liters.toFixed(1)+'L':''),right:rp(f.amount_paid),right2:f.km_per_liter?f.km_per_liter.toFixed(1)+' km/L':null,goto:"navTo('fuel')"}));
-  const sActs=S.svcs.slice(0,4).map(s=>({date:new Date(s.date),ico:svcIco(s.type),icoClass:'o',title:svcLabel(s.type),sub:fmtDS(s.date)+(s.odometer?' · '+km(s.odometer):''),right:rp(s.cost),right2:null,goto:"navTo('service')"}));
-    const acts=[...fActs,...sActs].sort((a,b)=>b.date-a.date).slice(0,5);
+    const sActs=S.svcs.slice(0,4).map(s=>({date:new Date(s.date),ico:svcIco(s.type),icoClass:'o',title:svcLabel(s.type),sub:fmtDS(s.date)+(s.odometer?' · '+km(s.odometer):''),right:rp(s.cost),right2:null,goto:"navTo('service')"}));
+    const acts=[...fActs,...sActs].sort((a,b)=>b.date-a.date).slice(0,6);
     if(acts.length){
       actEl.innerHTML=`<div class="card" style="padding:0;overflow:hidden">
-        <div style="padding:12px 14px 8px"><div style="font-size:12px;font-weight:700">Aktivitas Terakhir</div></div>
+        <div style="padding:12px 14px 8px;display:flex;justify-content:space-between;align-items:center">
+          <div style="font-size:12px;font-weight:700">Aktivitas Terakhir</div>
+          <span style="font-size:11px;color:var(--accent);font-weight:700;cursor:pointer" onclick="navTo('fuel')">Lihat semua →</span>
+        </div>
         ${acts.map(a=>`<div style="display:flex;align-items:center;gap:10px;padding:10px 14px;border-top:1px solid var(--border);cursor:pointer" onclick="${a.goto}">
           <div class="li-ico ${a.icoClass}">${a.ico}</div>
           <div style="flex:1;min-width:0"><div style="font-size:12px;font-weight:700">${esc(a.title)}</div><div style="font-size:10px;color:var(--muted);margin-top:1px">${esc(a.sub)}</div></div>
@@ -913,7 +917,56 @@ function rHome(){
           </div>
         </div>`).join('')}
       </div>`;
-    }else actEl.innerHTML='';
+    }else{
+      // Belum ada aktivitas sama sekali — tampilkan quick action
+      actEl.innerHTML=`<div class="card" style="text-align:center;padding:24px 16px">
+        <div style="font-size:13px;font-weight:700;margin-bottom:6px">Mulai catat aktivitas</div>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:16px;line-height:1.6">Tap + untuk mencatat bensin,<br>servis, atau kondisi parts</div>
+        <div style="display:flex;gap:8px">
+          <button onclick="openFuelAdd()" style="flex:1;padding:10px;border-radius:10px;background:var(--gl);color:var(--green);font-size:12px;font-weight:700;border:none;cursor:pointer;font-family:Manrope,sans-serif">+ Bensin</button>
+          <button onclick="openSvcAdd()" style="flex:1;padding:10px;border-radius:10px;background:var(--ol);color:var(--orange);font-size:12px;font-weight:700;border:none;cursor:pointer;font-family:Manrope,sans-serif">+ Servis</button>
+          <button onclick="openPartAdd()" style="flex:1;padding:10px;border-radius:10px;background:var(--al);color:var(--accent);font-size:12px;font-weight:700;border:none;cursor:pointer;font-family:Manrope,sans-serif">+ Parts</button>
+        </div>
+      </div>`;
+    }
+  }
+
+  // ── Jadwal servis berikutnya ──
+  const nxtSvcs=S.svcs.filter(s=>s.next_date||s.next_km).sort((a,b)=>{
+    const sa=svcStatus(a),sb=svcStatus(b);
+    if(sa.bad!==sb.bad)return sa.bad?-1:1;
+    if(sa.warn!==sb.warn)return sa.warn?-1:1;
+    const da=a.next_date?Math.ceil((new Date(a.next_date)-now)/864e5):9999;
+    const db=b.next_date?Math.ceil((new Date(b.next_date)-now)/864e5):9999;
+    return da-db;
+  }).slice(0,3);
+  const schedEl=document.getElementById('h-schedule');
+  if(schedEl){
+    if(nxtSvcs.length){
+      schedEl.innerHTML=`<div class="card" style="padding:0;overflow:hidden">
+        <div style="padding:12px 14px 8px;display:flex;justify-content:space-between;align-items:center">
+          <div style="font-size:12px;font-weight:700">Jadwal Servis</div>
+          <span style="font-size:11px;color:var(--accent);font-weight:700;cursor:pointer" onclick="navTo('service')">Lihat semua →</span>
+        </div>
+        ${nxtSvcs.map(s=>{
+          const st=svcStatus(s);
+          const kmRem=st.kmDays!=null?Math.round(st.kmDays):null;
+          const dayRem=s.next_date?Math.ceil((new Date(s.next_date)-now)/864e5):null;
+          const col=st.bad?'var(--red)':st.warn?'var(--orange)':'var(--green)';
+          const sub=[];
+          if(dayRem!=null)sub.push(dayRem<=0?`Telat ${Math.abs(dayRem)}hr`:`${dayRem}hr lagi`);
+          if(kmRem!=null)sub.push(kmRem<=0?`Lewat ${Math.abs(kmRem)} km`:`sisa ${kmRem} km`);
+          return`<div style="display:flex;align-items:center;gap:10px;padding:10px 14px;border-top:1px solid var(--border);cursor:pointer" onclick="openSvcEdit('${s.id}')">
+            <div class="li-ico o">${svcIco(s.type)}</div>
+            <div style="flex:1;min-width:0">
+              <div style="font-size:12px;font-weight:700">${esc(svcLabel(s.type))}</div>
+              <div style="font-size:10px;color:var(--muted);margin-top:1px">${sub.join(' · ')||'Terjadwal'}</div>
+            </div>
+            <div class="badge ${st.bad?'r':st.warn?'o':'g'}">${st.bad?'Segera':st.warn?'Cek':'Aman'}</div>
+          </div>`;
+        }).join('')}
+      </div>`;
+    }else schedEl.innerHTML='';
   }
 }
 
