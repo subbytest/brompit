@@ -204,7 +204,7 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
 <div id="auth-page">
   <div style="display:flex;flex-direction:column;align-items:center;margin-bottom:36px">
     <svg viewBox="0 0 48 48" width="64" height="64" fill="none" stroke="#0a84ff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:12px"><path d="M8 34 A16 16 0 0 1 40 34"/><line x1="24" y1="34" x2="14" y2="18" stroke="#0a84ff" stroke-width="2"/><circle cx="24" cy="34" r="2.5" fill="#0a84ff"/><line x1="8" y1="34" x2="11" y2="34"/><line x1="40" y1="34" x2="37" y2="34"/><line x1="24" y1="18" x2="24" y2="21"/><line x1="12.5" y1="21.5" x2="14.5" y2="23.5"/><line x1="35.5" y1="21.5" x2="33.5" y2="23.5"/></svg>
-    <div class="a-logo">Brompit</div>
+    <div class="a-logo">Brom<span>pit</span></div>
     <div class="a-sub">Log aktiviti pitmu</div>
   </div>
   <div class="a-form">
@@ -1576,7 +1576,7 @@ function rSet(){
     const svg=`<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}"><rect width="${size}" height="${size}" rx="${size*0.22}" fill="#0a0a0a"/><text x="50%" y="56%" font-family="system-ui,sans-serif" font-size="${size*0.38}px" font-weight="800" fill="#0a84ff" text-anchor="middle" dominant-baseline="middle">BP</text></svg>`;
     return'data:image/svg+xml;base64,'+btoa(svg);
   }
-  const manifest={name:'Brompit',short_name:'Brompit',description:'Log aktiviti pitmu',start_url:location.href.split('?')[0],scope:location.href.split('?')[0],display:'standalone',orientation:'portrait',background_color:'#0a0a0a',theme_color:'#0a84ff',categories:['lifestyle','utilities'],icons:[{src:makeIcon(192),sizes:'192x192',type:'image/svg+xml',purpose:'any maskable'},{src:makeIcon(512),sizes:'512x512',type:'image/svg+xml',purpose:'any maskable'}]};
+  const manifest={name:'Brompit',short_name:'Brompit',description:'Log aktiviti pitmu',start_url:location.href.split('?')[0],scope:location.href.split('?')[0],display:'standalone',orientation:'portrait',background_color:'#0a0a0a',theme_color:'#0a84ff',categories:['lifestyle','utilities'],icons:[{src:"icon-192-brompit.png",sizes:'192x192',type:'image/svg+xml',purpose:'any maskable'},{src:"icon-512-brompit.png",sizes:'512x512',type:'image/svg+xml',purpose:'any maskable'}]};
   const blob=new Blob([JSON.stringify(manifest)],{type:'application/manifest+json'});
   document.getElementById('pwa-manifest').href=URL.createObjectURL(blob);
 
