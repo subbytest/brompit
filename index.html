@@ -204,7 +204,7 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
 <div id="auth-page">
   <div style="display:flex;flex-direction:column;align-items:center;margin-bottom:36px">
     <svg viewBox="0 0 48 48" width="64" height="64" fill="none" stroke="#0a84ff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:12px"><path d="M8 34 A16 16 0 0 1 40 34"/><line x1="24" y1="34" x2="14" y2="18" stroke="#0a84ff" stroke-width="2"/><circle cx="24" cy="34" r="2.5" fill="#0a84ff"/><line x1="8" y1="34" x2="11" y2="34"/><line x1="40" y1="34" x2="37" y2="34"/><line x1="24" y1="18" x2="24" y2="21"/><line x1="12.5" y1="21.5" x2="14.5" y2="23.5"/><line x1="35.5" y1="21.5" x2="33.5" y2="23.5"/></svg>
-    <div class="a-logo">Brom<span>pit</span></div>
+    <div class="a-logo">Brompit</div>
     <div class="a-sub">Log aktiviti pitmu</div>
   </div>
   <div class="a-form">
@@ -821,20 +821,23 @@ function rHome(){
   const alertEl=document.getElementById('h-alerts');
   if(alertEl&&alerts.length){
     const worst=alerts.some(a=>a.level==='bad');
-    alertEl.innerHTML=`<div style="background:${worst?'var(--rl)':'var(--ol)'};border-radius:var(--radius);padding:11px 13px;display:flex;align-items:center;gap:10px;cursor:pointer" onclick="${alerts[0].goto}">
+    alertEl.innerHTML=`<div style="background:${worst?'var(--rl)':'var(--ol)'};border-radius:var(--radius);padding:11px 13px;display:flex;align-items:center;gap:10px">
       <div style="width:6px;height:6px;border-radius:50%;background:${worst?'var(--red)':'var(--orange)'};flex-shrink:0"></div>
-      <div style="flex:1;min-width:0">
+      <div style="flex:1;min-width:0;cursor:pointer" onclick="${alerts[0].goto}">
         <div style="font-size:12px;font-weight:700;color:${worst?'var(--red)':'var(--orange)'}">${alerts.length} item perlu perhatian</div>
         <div style="font-size:10px;color:var(--muted);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${alerts.map(a=>a.title).join(' · ')}</div>
       </div>
-      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round"><path d="m9 18 6-6-6-6"/></svg>
+      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round" style="cursor:pointer;flex-shrink:0" onclick="navTo('${alerts[0].goto.includes('parts')?'parts':'service'}')"><path d="m9 18 6-6-6-6"/></svg>
+      <button onclick="document.getElementById('h-alerts').innerHTML='';document.getElementById('h-parts').innerHTML=''" style="width:26px;height:26px;border-radius:50%;background:rgba(255,255,255,.1);border:none;cursor:pointer;color:var(--muted);font-size:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-family:Manrope,sans-serif">✕</button>
     </div>`;
+    // Sembunyikan parts preview karena sudah ada alert strip
+    if(partsEl)partsEl.innerHTML='';
   }else if(alertEl)alertEl.innerHTML='';
 
-  // ── Parts health preview (top 3 worst) ──
+  // ── Parts health preview — hanya tampil kalau tidak ada alert ──
   const partsEl=document.getElementById('h-parts');
   const urgentParts=S.parts.filter(p=>partStatus(p).level!=='ok').slice(0,3);
-  if(partsEl&&urgentParts.length){
+  if(partsEl&&urgentParts.length&&!alerts.length){
     partsEl.innerHTML=`<div class="card">
       <div class="sec-title" style="padding:0 0 8px">Kondisi Parts</div>
       ${urgentParts.map(p=>{
