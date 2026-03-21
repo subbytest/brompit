@@ -327,8 +327,10 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
         </div>
       </div>
       <div class="card">
-        <div class="sec-title" style="padding:0 0 6px">Akun</div>
-        <div style="font-size:13px;color:var(--muted)">Login sebagai <span id="set-user" style="color:var(--text);font-weight:700"></span></div>
+        <div class="sec-title" style="padding:0 0 8px">Akun</div>
+        <div style="font-size:13px;color:var(--muted);margin-bottom:12px">Login sebagai <span id="set-user" style="color:var(--text);font-weight:700"></span></div>
+        <button class="btn btn-s" onclick="openExport()">Salin Ringkasan Bulan Ini</button>
+        <button class="btn btn-s mt8" onclick="exportPDF()">Ekspor PDF</button>
       </div>
     </div>
   </div>
@@ -1480,12 +1482,11 @@ function exportPDF(){
 
   // ── HTML untuk PDF ──
   const htmlContent=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Brompit — ${esc(m.name)}</title>
-  <style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:system-ui,sans-serif;color:#1c1c1e;font-size:13px;padding:32px;max-width:640px;margin:0 auto}.logo{font-size:24px;font-weight:800;color:#0a84ff;margin-bottom:4px;letter-spacing:-.5px}.sub{font-size:12px;color:#8e8e93;margin-bottom:28px;line-height:1.6}h2{font-size:13px;font-weight:700;margin:24px 0 10px;padding-bottom:8px;border-bottom:2px solid #0a84ff;color:#0a84ff;text-transform:uppercase;letter-spacing:.06em}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:8px}.stat{background:#f2f2f7;border-radius:10px;padding:14px}.stat-v{font-size:17px;font-weight:800;color:#1c1c1e;margin-bottom:4px}.stat-l{font-size:8px;color:#8e8e93;text-transform:uppercase;letter-spacing:.06em;font-weight:600}table{width:100%;border-collapse:collapse;margin-bottom:8px}th{background:#0a84ff;color:#fff;padding:9px 12px;text-align:left;font-size:11px;font-weight:700}td{padding:8px 12px;border-bottom:1px solid #f2f2f7;font-size:12px;color:#3a3a3c}tr:last-child td{border-bottom:none}tr:nth-child(even) td{background:#fafafa}.footer{margin-top:28px;font-size:10px;color:#aeaeb2;border-top:1px solid #e5e5ea;padding-top:12px;text-align:center}@media print{body{padding:20px}@page{margin:15mm;size:A4}}</style>
+  <style>@media print{body{margin:0}@page{margin:16mm;size:A4}}*{box-sizing:border-box;margin:0;padding:0}body{font-family:system-ui,sans-serif;background:#fff;color:#18181b;font-size:13px;padding:32px;max-width:660px;margin:0 auto}.logo{font-size:22px;font-weight:700;letter-spacing:-.5px;border-bottom:2px solid #18181b;padding-bottom:16px;margin-bottom:24px}.logo-name{font-size:22px;font-weight:700;letter-spacing:-.5px}.logo-sub{font-size:13px;color:#71717a;margin-top:4px}h2{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:#71717a;margin:24px 0 10px}.stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:24px}.stat{background:#f4f4f5;border-radius:12px;padding:16px}.stat-v{font-size:20px;font-weight:700}.stat-l{font-size:10px;color:#71717a;font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-top:6px}table{width:100%;border-collapse:collapse;border:1px solid #e4e4e7;border-radius:12px;overflow:hidden;margin-bottom:4px}th{padding:10px 12px;font-size:11px;text-align:left;font-weight:600;color:#71717a;text-transform:uppercase;background:#f4f4f5}td{padding:8px 12px;border-bottom:1px solid #f4f4f5;font-size:12px}tr:last-child td{border-bottom:none}.footer{margin-top:24px;padding-top:16px;border-top:1px solid #e4e4e7;font-size:11px;color:#a1a1aa;text-align:center}</style>
   </head><body>
-  <div class="logo">Brompit</div>
-  <div class="sub">Laporan ${esc(periodLabel)} · ${esc(m.name)}${m.brand?' — '+esc(m.brand):''} · ${esc(tgl)}</div>
+  <div class="logo"><div class="logo-name">Brompit</div><div class="logo-sub">Laporan ${esc(periodLabel)} · ${esc(m.name)}${m.brand?' — '+esc(m.brand):''} · ${esc(tgl)}</div></div>
   <h2>Ringkasan</h2>
-  <div class="grid">
+  <div class="stat-grid">
     <div class="stat"><div class="stat-v">${rp(fc+sc)}</div><div class="stat-l">Total Biaya</div></div>
     <div class="stat"><div class="stat-v">${rp(fc)}</div><div class="stat-l">Bensin</div></div>
     <div class="stat"><div class="stat-v">${rp(sc)}</div><div class="stat-l">Servis</div></div>
@@ -1493,9 +1494,9 @@ function exportPDF(){
     <div class="stat"><div class="stat-v">${totKm?km(totKm):'—'}</div><div class="stat-l">Jarak Tempuh</div></div>
     <div class="stat"><div class="stat-v">${cpk?'Rp '+cpk+'/km':'—'}</div><div class="stat-l">Biaya/km</div></div>
   </div>
-  ${fuel.length?`<h2>Isi Bensin (${fuel.length}x)</h2><table><tr><th>Tanggal</th><th>BBM</th><th>Bayar</th><th>Liter</th><th>km/L</th></tr>${fuel.map(f=>`<tr><td>${fmtD(f.date)}</td><td>${esc(f.bbm_name||'—')}</td><td>${rp(f.amount_paid)}</td><td>${f.liters?f.liters.toFixed(2)+'L':'—'}</td><td>${f.km_per_liter?f.km_per_liter.toFixed(1):'—'}</td></tr>`).join('')}</table>`:''}
-  ${svcs.length?`<h2>Servis (${svcs.length}x)</h2><table><tr><th>Tanggal</th><th>Kategori</th><th>Km</th><th>Biaya</th><th>Catatan</th></tr>${svcs.map(s=>`<tr><td>${fmtD(s.date)}</td><td>${esc(svcLabel(s.type))}</td><td>${s.odometer?km(s.odometer):'—'}</td><td>${rp(s.cost)}</td><td>${esc(s.note||'—')}</td></tr>`).join('')}</table>`:''}
-  <div class="footer">Dibuat oleh Brompit · ${esc(S.user?.username||'')} · ${esc(tgl)}</div>
+  ${fuel.length?`<h2>Isi Bensin (${fuel.length}x)</h2><table><thead><tr style="background:#f4f4f5"><th>Tanggal</th><th>BBM</th><th>Bayar</th><th>Liter</th><th>km/L</th></tr></thead><tbody>${fuel.map(f=>`<tr><td>${fmtD(f.date)}</td><td>${esc(f.bbm_name||'—')}</td><td>${rp(f.amount_paid)}</td><td>${f.liters?f.liters.toFixed(2)+'L':'—'}</td><td>${f.km_per_liter?f.km_per_liter.toFixed(1):'—'}</td></tr>`).join('')}</tbody></table>`:''}
+  ${svcs.length?`<h2>Servis (${svcs.length}x)</h2><table><thead><tr style="background:#f4f4f5"><th>Tanggal</th><th>Kategori</th><th>Km</th><th>Biaya</th><th>Catatan</th></tr></thead><tbody>${svcs.map(s=>`<tr><td>${fmtD(s.date)}</td><td>${esc(svcLabel(s.type))}</td><td>${s.odometer?km(s.odometer):'—'}</td><td>${rp(s.cost)}</td><td>${esc(s.note||'—')}</td></tr>`).join('')}</tbody></table>`:''}
+  <div class="footer">Digenerate oleh Brompit · ${esc(S.user?.username||'')} · ${esc(tgl)}</div>
   <script>window.onload=()=>{window.print()}<\/script>
   </body></html>`;
 
