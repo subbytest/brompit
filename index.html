@@ -1406,8 +1406,58 @@ function rSum(){
       ${fuel.length>8?`<div style="font-size:11px;color:var(--muted);padding-top:6px">+${fuel.length-8} lainnya</div>`:''}
     </div>`:''}
     ${!fuel.length&&!svcs.length?`<div class="empty"><div class="empty-title">Tidak ada data</div><div class="empty-sub">Belum ada data di periode ini</div></div>`:''}
-    ${fuel.length||svcs.length?`<button class="btn btn-s mt12" onclick="exportPDF()" style="display:flex;align-items:center;justify-content:center;gap:8px"><span>Export PDF</span></button>`:''}`;
+    ${fuel.length||svcs.length?`<button class="btn btn-s mt12" onclick="openExport()" style="display:flex;align-items:center;justify-content:center;gap:8px"><span>Ekspor & Salin</span></button>`:''}`;
 }
+function openExport(){
+  const m=gm();if(!m)return;
+  const ex=document.getElementById('_exportSheet');if(ex)ex.remove();
+  const sheet=document.createElement('div');
+  sheet.id='_exportSheet';
+  sheet.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9999;display:flex;align-items:flex-end;justify-content:center;backdrop-filter:blur(4px)';
+  const periodLabel={week:'Minggu Ini',month:'Bulan Ini',year:'Tahun Ini',all:'Semua Waktu'}[sumP]||'Bulan Ini';
+  sheet.innerHTML=`<div style="background:var(--card);border-radius:20px 20px 0 0;width:100%;max-width:430px;padding:0 16px 40px;border-top:1px solid var(--border)">
+    <div style="width:36px;height:4px;background:var(--border);border-radius:2px;margin:14px auto 20px"></div>
+    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:12px">Akun</div>
+    <div style="font-size:13px;color:var(--muted);margin-bottom:20px">Motor: <span style="color:var(--text);font-weight:700">${esc(m.name)}</span> · ${periodLabel}</div>
+    <button id="_ex-copy" style="width:100%;padding:14px;border-radius:var(--radius-sm);background:var(--card2);color:var(--text);font-size:14px;font-weight:700;border:none;cursor:pointer;font-family:Manrope,sans-serif;margin-bottom:10px">Salin Ringkasan ${periodLabel}</button>
+    <button id="_ex-pdf" style="width:100%;padding:14px;border-radius:var(--radius-sm);background:none;color:var(--red);font-size:14px;font-weight:700;border:none;cursor:pointer;font-family:Manrope,sans-serif">Ekspor PDF</button>
+  </div>`;
+  document.body.appendChild(sheet);
+  sheet.querySelector('#_ex-copy').onclick=()=>{sheet.remove();copyRingkasan();};
+  sheet.querySelector('#_ex-pdf').onclick=()=>{sheet.remove();exportPDF();};
+  sheet.onclick=e=>{if(e.target===sheet)sheet.remove();};
+}
+
+function copyRingkasan(){
+  const m=gm();if(!m)return;
+  const now=new Date();
+  const inP=d=>{
+    if(!d)return false;const dt=new Date(d);
+    if(sumP==='week'){const ws=new Date(now);ws.setDate(now.getDate()-now.getDay());ws.setHours(0,0,0,0);return dt>=ws}
+    if(sumP==='month')return dt.getMonth()===now.getMonth()&&dt.getFullYear()===now.getFullYear();
+    if(sumP==='year')return dt.getFullYear()===now.getFullYear();
+    return true;
+  };
+  const fuel=S.fuel.filter(f=>inP(f.date));const svcs=S.svcs.filter(s=>inP(s.date));
+  const fc=fuel.reduce((a,f)=>a+(f.amount_paid||0),0);const sc=svcs.reduce((a,s)=>a+(s.cost||0),0);
+  const fl=fuel.reduce((a,f)=>a+(f.liters||0),0);
+  const kmls=fuel.filter(f=>f.km_per_liter&&f.km_per_liter>0&&f.km_per_liter<200).map(f=>f.km_per_liter);
+  const avgKml=kmls.length?(kmls.reduce((a,b)=>a+b,0)/kmls.length).toFixed(1):null;
+  const totKm=fuel.filter(f=>f.km_traveled).reduce((a,f)=>a+(f.km_traveled||0),0);
+  const cpk=totKm&&(fc+sc)?Math.round((fc+sc)/totKm):null;
+  const periodLabel={week:'Minggu Ini',month:'Bulan Ini',year:'Tahun Ini',all:'Semua Waktu'}[sumP];
+  const tgl=now.toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'});
+  const fuelLines=fuel.slice(0,5).map(f=>`  ${fmtD(f.date)} · ${rp(f.amount_paid)}${f.liters?' ('+f.liters.toFixed(1)+'L)':''}${f.km_per_liter?' · '+f.km_per_liter.toFixed(1)+' km/L':''}`).join('\n');
+  const svcLines=svcs.slice(0,5).map(s=>`  ${fmtD(s.date)} · ${svcLabel(s.type)} · ${rp(s.cost)}`).join('\n');
+  const text=`Ringkasan Brompit — ${periodLabel}\n${m.name}${m.brand?' ('+m.brand+')':''} · ${tgl}\n\nTotal Biaya: ${rp(fc+sc)}\nBensin: ${rp(fc)}${fl>0?' ('+fl.toFixed(1)+' L)':''}${avgKml?'\nEfisiensi: '+avgKml+' km/L':''}${totKm?'\nJarak Tempuh: '+km(totKm):''}${cpk?'\nBiaya/km: Rp '+cpk:''}\nServis: ${rp(sc)}${fuel.length?'\n\nIsi Bensin ('+fuel.length+'x):\n'+fuelLines:''}${svcs.length?'\n\nServis ('+svcs.length+'x):\n'+svcLines:''}\n\nTotal isian: ${fuel.length} bensin · ${svcs.length} servis`;
+  if(navigator.clipboard?.writeText){
+    navigator.clipboard.writeText(text).then(()=>toast('Ringkasan disalin!','ok')).catch(()=>toast('Gagal salin','e'));
+  }else{
+    const ta=document.createElement('textarea');ta.value=text;ta.style.cssText='position:fixed;opacity:0';document.body.appendChild(ta);ta.select();
+    try{document.execCommand('copy');toast('Ringkasan disalin!','ok')}catch{toast('Gagal salin','e')}finally{ta.remove()}
+  }
+}
+
 function exportPDF(){
   const m=gm();if(!m)return;
   const now=new Date();
@@ -1428,32 +1478,19 @@ function exportPDF(){
   const periodLabel={week:'Minggu Ini',month:'Bulan Ini',year:'Tahun Ini',all:'Semua Waktu'}[sumP];
   const tgl=now.toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'});
 
-  // ── Teks ringkasan untuk clipboard ──
-  const ringkasanTxt=[
-    `🏍️ Brompit — ${m.name}${m.brand?' ('+m.brand+')':''}`,
-    `📅 ${periodLabel} · ${tgl}`,
-    ``,
-    `💰 Total: ${rp(fc+sc)}`,
-    `⛽ Bensin: ${rp(fc)}${fl>0?' ('+fl.toFixed(1)+' L)':''}`,
-    `🔧 Servis: ${rp(sc)}`,
-    avgKml?`📊 Efisiensi rata-rata: ${avgKml} km/L`:'',
-    totKm?`📏 Jarak tempuh: ${km(totKm)}`:'',
-    cpk?`💲 Biaya per km: Rp ${cpk}/km`:'',
-  ].filter(Boolean).join('\n');
-
   // ── HTML untuk PDF ──
   const htmlContent=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Brompit — ${esc(m.name)}</title>
-  <style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:system-ui,sans-serif;color:#1c1c1e;font-size:13px;padding:32px;max-width:680px;margin:0 auto}.logo{font-size:22px;font-weight:800;color:#0a84ff;margin-bottom:4px}.sub{font-size:12px;color:#8e8e93;margin-bottom:24px}h2{font-size:14px;font-weight:700;margin:20px 0 10px;padding-bottom:6px;border-bottom:2px solid #0a84ff;color:#0a84ff}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}.stat{background:#f2f2f7;border-radius:10px;padding:12px}.stat-v{font-size:17px;font-weight:800}.stat-l{font-size:9px;color:#8e8e93;margin-top:3px;text-transform:uppercase}table{width:100%;border-collapse:collapse;margin-bottom:16px}th{background:#0a84ff;color:#fff;padding:8px 10px;text-align:left;font-size:11px;font-weight:700}td{padding:7px 10px;border-bottom:1px solid #e5e5ea;font-size:12px}tr:nth-child(even) td{background:#f9f9f9}.footer{margin-top:28px;font-size:10px;color:#8e8e93;border-top:1px solid #e5e5ea;padding-top:12px}@media print{body{padding:16px}}</style>
+  <style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:system-ui,sans-serif;color:#1c1c1e;font-size:13px;padding:32px;max-width:640px;margin:0 auto}.logo{font-size:24px;font-weight:800;color:#0a84ff;margin-bottom:4px;letter-spacing:-.5px}.sub{font-size:12px;color:#8e8e93;margin-bottom:28px;line-height:1.6}h2{font-size:13px;font-weight:700;margin:24px 0 10px;padding-bottom:8px;border-bottom:2px solid #0a84ff;color:#0a84ff;text-transform:uppercase;letter-spacing:.06em}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:8px}.stat{background:#f2f2f7;border-radius:10px;padding:14px}.stat-v{font-size:17px;font-weight:800;color:#1c1c1e;margin-bottom:4px}.stat-l{font-size:8px;color:#8e8e93;text-transform:uppercase;letter-spacing:.06em;font-weight:600}table{width:100%;border-collapse:collapse;margin-bottom:8px}th{background:#0a84ff;color:#fff;padding:9px 12px;text-align:left;font-size:11px;font-weight:700}td{padding:8px 12px;border-bottom:1px solid #f2f2f7;font-size:12px;color:#3a3a3c}tr:last-child td{border-bottom:none}tr:nth-child(even) td{background:#fafafa}.footer{margin-top:28px;font-size:10px;color:#aeaeb2;border-top:1px solid #e5e5ea;padding-top:12px;text-align:center}@media print{body{padding:20px}@page{margin:15mm;size:A4}}</style>
   </head><body>
   <div class="logo">Brompit</div>
   <div class="sub">Laporan ${esc(periodLabel)} · ${esc(m.name)}${m.brand?' — '+esc(m.brand):''} · ${esc(tgl)}</div>
   <h2>Ringkasan</h2>
   <div class="grid">
-    <div class="stat"><div class="stat-v">${rp(fc+sc)}</div><div class="stat-l">Total</div></div>
+    <div class="stat"><div class="stat-v">${rp(fc+sc)}</div><div class="stat-l">Total Biaya</div></div>
     <div class="stat"><div class="stat-v">${rp(fc)}</div><div class="stat-l">Bensin</div></div>
     <div class="stat"><div class="stat-v">${rp(sc)}</div><div class="stat-l">Servis</div></div>
-    <div class="stat"><div class="stat-v">${avgKml||'—'} km/L</div><div class="stat-l">Konsumsi rata-rata</div></div>
-    <div class="stat"><div class="stat-v">${totKm?km(totKm):'—'}</div><div class="stat-l">Jarak tempuh</div></div>
+    <div class="stat"><div class="stat-v">${avgKml||'—'} km/L</div><div class="stat-l">Konsumsi</div></div>
+    <div class="stat"><div class="stat-v">${totKm?km(totKm):'—'}</div><div class="stat-l">Jarak Tempuh</div></div>
     <div class="stat"><div class="stat-v">${cpk?'Rp '+cpk+'/km':'—'}</div><div class="stat-l">Biaya/km</div></div>
   </div>
   ${fuel.length?`<h2>Isi Bensin (${fuel.length}x)</h2><table><tr><th>Tanggal</th><th>BBM</th><th>Bayar</th><th>Liter</th><th>km/L</th></tr>${fuel.map(f=>`<tr><td>${fmtD(f.date)}</td><td>${esc(f.bbm_name||'—')}</td><td>${rp(f.amount_paid)}</td><td>${f.liters?f.liters.toFixed(2)+'L':'—'}</td><td>${f.km_per_liter?f.km_per_liter.toFixed(1):'—'}</td></tr>`).join('')}</table>`:''}
@@ -1471,11 +1508,8 @@ function exportPDF(){
       <div style="font-size:15px;font-weight:800;letter-spacing:-.3px">Preview PDF</div>
       <button id="_prev-dl" style="font-size:13px;font-weight:700;color:#fff;background:var(--accent);padding:8px 14px;border-radius:10px;border:none;cursor:pointer;font-family:Manrope,sans-serif">Download</button>
     </div>
-    <div style="flex:1;overflow-y:auto;padding:16px">
-      <div style="background:#fff;border-radius:var(--radius);overflow:hidden;box-shadow:var(--sh);max-width:600px;margin:0 auto">${htmlContent.replace(/<script[\s\S]*?<\/script>/,'')}</div>
-    </div>
-    <div style="padding:12px 16px;background:var(--card);border-top:1px solid var(--border);flex-shrink:0">
-      <button id="_prev-copy" style="width:100%;padding:13px;border-radius:var(--radius-sm);background:var(--card2);border:1px solid var(--border);font-size:14px;font-weight:700;cursor:pointer;color:var(--text);font-family:Manrope,sans-serif">Salin Ringkasan ke Clipboard</button>
+    <div style="flex:1;overflow-y:auto;padding:16px 12px">
+      <div style="background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 2px 16px rgba(0,0,0,.12);max-width:560px;margin:0 auto">${htmlContent.replace(/<script[\s\S]*?<\/script>/,'')}</div>
     </div>`;
   document.body.appendChild(prev);
   prev.querySelector('#_prev-back').onclick=()=>prev.remove();
@@ -1483,17 +1517,6 @@ function exportPDF(){
     const w=window.open('','_blank');
     if(!w){toast('Izinkan popup untuk download PDF','e');return}
     w.document.write(htmlContent);w.document.close();
-  };
-  prev.querySelector('#_prev-copy').onclick=()=>{
-    navigator.clipboard.writeText(ringkasanTxt).then(()=>{
-      toast('Ringkasan disalin!','ok');
-    }).catch(()=>{
-      // fallback
-      const ta=document.createElement('textarea');
-      ta.value=ringkasanTxt;ta.style.position='fixed';ta.style.opacity='0';
-      document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove();
-      toast('Ringkasan disalin!','ok');
-    });
   };
 }
 
